@@ -3,7 +3,7 @@ export class InsertOperation {
   private insertString: string;
   private position: number;
 
-  constructor(insertString: string, position: number) {
+  constructor(position: number, insertString: string,) {
     this.insertString = insertString;
     this.position = position;
   }
