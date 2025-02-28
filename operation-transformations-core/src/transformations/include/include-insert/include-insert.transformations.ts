@@ -3,7 +3,7 @@ import { InsertOperation } from '../../../operations/insert.operation.ts';
 import { JointDeleteOperation } from '../../../operations/joint-delete.operation.ts';
 
 
-export function IncludeDeleteInInsert(target: InsertOperation, operation: DeleteOperation): InsertOperation {
+export function includeDeleteInInsert(target: InsertOperation, operation: DeleteOperation): InsertOperation {
   // "ABCDEFG", target delete range "[ABC]DEFG", operation delete range "ABC[DEFG]", no need to transform
   if (target.getPosition() + target.getInsertString().length < operation.getPositionStart()) {
     return new InsertOperation(target.getPosition(), target.getInsertString());
@@ -23,9 +23,9 @@ export function IncludeDeleteInInsert(target: InsertOperation, operation: Delete
 }
 
 
-export function IncludeInsertInInsert(target: InsertOperation, operation: InsertOperation): InsertOperation | JointDeleteOperation {
+export function includeInsertInInsert(target: InsertOperation, operation: InsertOperation): InsertOperation {
   // "ABCDEFG", target delete range "[ABC]DEFG", operation insert is "ABCDEFG[aaa]", no need to transform
-  if (target.getPosition() + target.getInsertString().length <= operation.getPosition()) {
+  if (target.getPosition() <= operation.getPosition()) {
     return new InsertOperation(target.getPosition(), target.getInsertString());
   }
 
@@ -34,15 +34,7 @@ export function IncludeInsertInInsert(target: InsertOperation, operation: Insert
     console.log('second');
     return new InsertOperation(target.getPosition() + operation.getInsertString().length, target.getInsertString());
   }
-  console.log('none');
-  // if we are here it means that ranges overlap, in this case we need to substract operation range from target range
-  // "ABCDEFG", target delete range "AB[CDE]FG", insert range "ABCD[aaa]EFG"
-  // OR target delete range "AB[CDE]FG", operation range "ABC[aaa]DEFG", result should be AB[F]G
-  const firstDeleteRange = new DeleteOperation(target.getPosition(), operation.getPosition() - target.getPosition());
-  const secondDeleteRange = new DeleteOperation(operation.getPosition() + operation.getInsertString().length, target.getInsertString().length - firstDeleteRange.getAmount());
 
-  return new JointDeleteOperation(
-    firstDeleteRange,
-    secondDeleteRange,
-  );
+  return new InsertOperation(target.getPosition(), target.getInsertString());
 }
+

@@ -3,7 +3,7 @@ import { InsertOperation } from '../../../operations/insert.operation.ts';
 import { JointDeleteOperation } from '../../../operations/joint-delete.operation.ts';
 
 
-export function IncludeDeleteInDelete(target: DeleteOperation, operation: DeleteOperation): DeleteOperation {
+export function includeDeleteInDelete(target: DeleteOperation, operation: DeleteOperation): DeleteOperation {
   // "ABCDEFG", target delete range "[ABC]DEFG", operation delete range "ABC[DEFG]", no need to transform
   if (target.getPositionStart() + target.getAmount() < operation.getPositionStart()) {
     return new DeleteOperation(target.getPositionStart(), target.getAmount());
@@ -23,7 +23,7 @@ export function IncludeDeleteInDelete(target: DeleteOperation, operation: Delete
 }
 
 
-export function IncludeInsertInDelete(target: DeleteOperation, operation: InsertOperation): DeleteOperation | JointDeleteOperation {
+export function includeInsertInDelete(target: DeleteOperation, operation: InsertOperation): DeleteOperation | JointDeleteOperation {
   // "ABCDEFG", target delete range "[ABC]DEFG", operation insert is "ABCDEFG[aaa]", no need to transform
   if (target.getPositionStart() + target.getAmount() <= operation.getPosition()) {
     return new DeleteOperation(target.getPositionStart(), target.getAmount());
