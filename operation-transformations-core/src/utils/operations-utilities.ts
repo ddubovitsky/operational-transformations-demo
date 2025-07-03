@@ -1,26 +1,9 @@
 // import { Operation } from './operation.ts';
-import { DeleteOperation } from './operations/delete.operation.ts';
-import { InsertOperation } from './operations/insert.operation.ts';
-import { JointDeleteOperation } from './operations/joint-delete.operation.ts';
+import { DeleteOperation } from '../operations/delete.operation.ts';
+import { InsertOperation } from '../operations/insert.operation.ts';
+import { JointDeleteOperation } from '../operations/joint-delete.operation.ts';
+import { DoubleMap } from './double-map.class.ts';
 type Operation = DeleteOperation | InsertOperation | JointDeleteOperation;
-class DoubleMap {
-  map = new Map();
-
-  set(keyA: any, keyB: any, data: any) {
-    const secondMap = this.map.get(keyA) ?? new Map();
-    secondMap.set(keyB, data);
-  }
-
-  get(keyA: any, keyB: any) {
-    const secondMap = this.map.get(keyA) ?? new Map();
-    return secondMap.get(keyB);
-  }
-
-  has(keyA: any, keyB: any) {
-    const secondMap = this.map.get(keyA) ?? new Map();
-    return secondMap.has(keyB);
-  }
-}
 
 const savedOps = new DoubleMap();
 

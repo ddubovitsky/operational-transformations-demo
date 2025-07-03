@@ -1,7 +1,7 @@
 import { DeleteOperation } from '../../../operations/delete.operation.ts';
 import { InsertOperation } from '../../../operations/insert.operation.ts';
 import { JointDeleteOperation } from '../../../operations/joint-delete.operation.ts';
-import { saveLi } from '../../../utilities.ts';
+import { saveLi } from '../../../utils/operations-utilities.ts';
 
 
 export function includeDeleteInDelete(target: DeleteOperation, operation: DeleteOperation): DeleteOperation {
@@ -24,7 +24,6 @@ export function includeDeleteInDelete(target: DeleteOperation, operation: Delete
   saveLi( target,operation, result);
   return result;
 }
-
 
 export function includeInsertInDelete(target: DeleteOperation, operation: InsertOperation): DeleteOperation | JointDeleteOperation {
   // "ABCDEFG", target delete range "[ABC]DEFG", operation insert is "ABCDEFG[aaa]", no need to transform

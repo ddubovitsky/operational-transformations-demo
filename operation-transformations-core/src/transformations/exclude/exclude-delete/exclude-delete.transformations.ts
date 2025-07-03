@@ -1,7 +1,7 @@
 import { DeleteOperation } from '../../../operations/delete.operation.ts';
 import { JointDeleteOperation } from '../../../operations/joint-delete.operation.ts';
 import { InsertOperation } from '../../../operations/insert.operation.ts';
-import { checkLi, recoverLi } from '../../../utilities.ts';
+import { checkLi, recoverLi } from '../../../utils/operations-utilities.ts';
 
 export function excludeDeleteFromDelete(target: DeleteOperation, operation: DeleteOperation): DeleteOperation {
   if (checkLi(operation, target)) {

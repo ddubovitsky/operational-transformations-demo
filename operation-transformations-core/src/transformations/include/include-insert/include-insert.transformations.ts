@@ -1,6 +1,6 @@
 import { DeleteOperation } from '../../../operations/delete.operation.ts';
 import { InsertOperation } from '../../../operations/insert.operation.ts';
-import { saveLi } from '../../../utilities.ts';
+import { saveLi } from '../../../utils/operations-utilities.ts';
 
 
 export function includeDeleteInInsert(target: InsertOperation, operation: DeleteOperation): InsertOperation {
