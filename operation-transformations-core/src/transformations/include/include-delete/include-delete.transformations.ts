@@ -1,6 +1,7 @@
 import { DeleteOperation } from '../../../operations/delete.operation.ts';
 import { InsertOperation } from '../../../operations/insert.operation.ts';
 import { JointDeleteOperation } from '../../../operations/joint-delete.operation.ts';
+import { saveLi } from '../../../utilities.ts';
 
 
 export function includeDeleteInDelete(target: DeleteOperation, operation: DeleteOperation): DeleteOperation {
@@ -19,7 +20,9 @@ export function includeDeleteInDelete(target: DeleteOperation, operation: Delete
   const totalDeleteEnd = Math.max(operation.getAmount() + operation.getPositionStart(), target.getPositionStart() + target.getAmount());
   const totalRange = totalDeleteEnd - position;
   const amount = totalRange - operation.getAmount();
-  return new DeleteOperation(position, amount);
+  const result = new DeleteOperation(position, amount);
+  saveLi( target,operation, result);
+  return result;
 }
 
 

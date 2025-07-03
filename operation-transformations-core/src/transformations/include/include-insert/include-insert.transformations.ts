@@ -1,6 +1,6 @@
 import { DeleteOperation } from '../../../operations/delete.operation.ts';
 import { InsertOperation } from '../../../operations/insert.operation.ts';
-import { JointDeleteOperation } from '../../../operations/joint-delete.operation.ts';
+import { saveLi } from '../../../utilities.ts';
 
 
 export function includeDeleteInInsert(target: InsertOperation, operation: DeleteOperation): InsertOperation {
@@ -16,10 +16,9 @@ export function includeDeleteInInsert(target: InsertOperation, operation: Delete
   // "ABCDEFG", target delete range "AB[CDE]FG", operation range "ABCD[EFG]"
   // OR target delete range "ABCD[EF]G", operation range "AB[CDE]FG", result should be AB[F]G
   const position = Math.min(operation.getPositionStart(), target.getPosition());
-  const totalDeleteEnd = Math.max(operation.getAmount() + operation.getPositionStart(), target.getPosition() + target.getInsertString().length);
-  const totalRange = totalDeleteEnd - position;
-  const amount = totalRange - operation.getAmount();
-  return new InsertOperation(position, target.getInsertString());
+  const result = new InsertOperation(position, target.getInsertString());
+  saveLi(target, operation, result);
+  return result;
 }
 
 
