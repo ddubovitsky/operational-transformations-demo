@@ -1,5 +1,10 @@
 import { Operation } from '../operation.ts';
-import { getOperationStartEnd, IntersectionType, intersectOperations } from '../utils/operations-intersections.util.ts';
+import {
+  getOperationStartEnd,
+  intersectInsertOperations,
+  IntersectionType,
+  intersectOperations,
+} from '../utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
 import { saveLi } from '../utils/operations-utilities.ts';
 
@@ -30,7 +35,12 @@ export class InsertOperation {
   }
 
   include(operation: Operation) {
-    const overlapType = intersectOperations(this, operation);
+    let overlapType = intersectOperations(this, operation);
+
+    if(operation instanceof InsertOperation){
+      overlapType = intersectInsertOperations(this, operation);
+    }
+
     const operationStartEnd = getOperationStartEnd(operation);
 
     switch (overlapType) {
@@ -49,6 +59,11 @@ export class InsertOperation {
           const result = new InsertOperation(position, this.getInsertString());
           saveLi(this, operation, result);
           return result;
+        }
+
+        if(operation instanceof InsertOperation){
+          console.log('overlap')
+          return new InsertOperation(operation.getPosition(), operation.getInsertString());
         }
 
         throw 'Unexpected operation type';

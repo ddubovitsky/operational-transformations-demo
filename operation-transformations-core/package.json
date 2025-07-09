@@ -6,14 +6,15 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node ./src/index.ts",
-    "test": "node --test"
+    "start": "node  --experimental-transform-types ./src/index.ts",
+    "test": "node --loader tsx --experimental-transform-types --test"
   },
   "dependencies": {
+    "tsx": "^4.20.3"
   },
   "devDependencies": {
-    "typescript": "^5.5.3",
-    "@types/node": "^22.13.4"
+    "@types/node": "^22.13.4",
+    "typescript": "^5.5.3"
   },
   "private": true
 }

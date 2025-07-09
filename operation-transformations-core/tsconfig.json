@@ -3,9 +3,10 @@
     "target": "esnext",
     "module": "commonjs",
     "esModuleInterop": true,
+    "noEmit": true,
     "allowImportingTsExtensions": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
+    "strict": false,
     "skipLibCheck": true,
     "outDir": "dist"
   },

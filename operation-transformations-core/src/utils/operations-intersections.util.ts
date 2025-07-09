@@ -24,6 +24,21 @@ export function intersectOperations(operationA: Operation, operationB: Operation
   return IntersectionType.Overlap;
 }
 
+export function intersectInsertOperations(operationA: Operation, operationB: Operation): IntersectionType {
+  const operationARange = getOperationStartEnd(operationA);
+  const operationBRange = getOperationStartEnd(operationB);
+
+  if (operationARange.start <= operationBRange.start) {
+    return IntersectionType.OnTheRight;
+  }
+
+  if (operationARange.start >= operationBRange.start) {
+    return IntersectionType.OnTheLeft;
+  }
+
+  return IntersectionType.Overlap;
+}
+
 export function getOperationStartEnd(operation: Operation): { start: number, end: number, lengthDiff: number } {
   if (operation instanceof InsertOperation) {
     return { start: operation.getPosition(), end: operation.getPosition() + operation.getInsertString().length, lengthDiff: operation.getInsertString().length };
