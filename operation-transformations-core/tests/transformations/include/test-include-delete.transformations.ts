@@ -1,9 +1,5 @@
 import { describe, it } from 'node:test';
 import { DeleteOperation } from '../../../src/operations/delete.operation.ts';
-import {
-  includeDeleteInDelete,
-  includeInsertInDelete,
-} from '../../../src/transformations/include/include-delete/include-delete.transformations.ts';
 import assert from 'node:assert';
 import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 
@@ -79,7 +75,7 @@ describe('Include insert in delete', (t) => {
 
   it('Include insert overlaps to the right', () => {
     const initialString = 'ABCDEFG';
-    const operation = new InsertOperation(3,'123' );
+    const operation = new InsertOperation(3, '123');
     const target = new DeleteOperation(1, 4);
     const transformed = target.include(operation);
     assert.equal(transformed.execute(operation.execute(initialString)), 'A123FG');

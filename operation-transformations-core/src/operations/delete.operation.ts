@@ -25,6 +25,21 @@ export class DeleteOperation {
     return input.substring(0, this.positionStart) + input.substring(this.positionStart + this.amount, input.length);
   }
 
+  exclude(operation: Operation) {
+    const overlapType = intersectOperations(this, operation);
+
+    const operationStartEnd = getOperationStartEnd(operation);
+
+    switch (overlapType) {
+      case IntersectionType.OnTheLeft:
+        return new DeleteOperation(this.getPositionStart() - operationStartEnd.lengthDiff, this.getAmount());
+      case IntersectionType.OnTheRight:
+        return new DeleteOperation(this.getPositionStart(), this.getAmount());
+      case IntersectionType.Overlap:
+        throw 'Exclude overlap is not handled :(';
+    }
+  }
+
   include(operation: Operation) {
     let overlapType = intersectOperations(this, operation);
 

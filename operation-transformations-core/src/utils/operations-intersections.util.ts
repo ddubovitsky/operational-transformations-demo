@@ -4,8 +4,8 @@ import { DeleteOperation } from '../operations/delete.operation.ts';
 import { JointDeleteOperation } from '../operations/joint-delete.operation.ts';
 
 export enum IntersectionType {
-  OnTheLeft = 'OnTheLeft',
-  OnTheRight = 'OnTheRight',
+  OnTheLeft = 'OnTheLeft',   // a(bc)d[ef]g  [] <-- op A, () <--- op B
+  OnTheRight = 'OnTheRight', // a[bc]d(ef)g.
   Overlap = 'Overlap'
 }
 
