@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node  --experimental-transform-types ./src/index.ts",
-    "test": "node --loader tsx --experimental-transform-types --test"
+    "test": "node --import tsx --experimental-transform-types --test"
   },
   "dependencies": {
     "tsx": "^4.20.3"

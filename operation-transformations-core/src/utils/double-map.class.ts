@@ -4,6 +4,7 @@ export class DoubleMap {
   set(keyA: any, keyB: any, data: any) {
     const secondMap = this.map.get(keyA) ?? new Map();
     secondMap.set(keyB, data);
+    this.map.set(keyA, secondMap);
   }
 
   get(keyA: any, keyB: any) {

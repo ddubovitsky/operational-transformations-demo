@@ -33,10 +33,9 @@ export function includeInsertInDelete(target: DeleteOperation, operation: Insert
 
   // "ABCDEFG", target delete range "ABC[DEFG]", operation insert is "[aaa]ABCDEFG", start has to be shifted by [aaa]
   if (operation.getPosition() <= target.getPositionStart()) {
-    console.log('second');
     return new DeleteOperation(target.getPositionStart() + operation.getInsertString().length, target.getAmount());
   }
-  console.log('none');
+
   // if we are here it means that ranges overlap, in this case we need to substract operation range from target range
   // "ABCDEFG", target delete range "AB[CDE]FG", insert range "ABCD[aaa]EFG"
   // OR target delete range "AB[CDE]FG", operation range "ABC[aaa]DEFG", result should be AB[F]G

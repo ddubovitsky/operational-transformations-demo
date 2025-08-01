@@ -1,4 +1,6 @@
 import { DeleteOperation } from './delete.operation.ts';
+import { Operation } from '../operation.ts';
+import { InsertOperation } from './insert.operation.ts';
 
 export class JointDeleteOperation {
   private first: DeleteOperation;
@@ -23,6 +25,32 @@ export class JointDeleteOperation {
       resultString += input[i];
     }
     return resultString;
+  }
+
+  exclude(operation: Operation) {
+    if (operation instanceof JointDeleteOperation) {
+      throw 'Cannot exclude delete from  joint operation';
+    }
+    if (operation instanceof DeleteOperation) {
+      throw 'not yer support exclude from delete operation';
+    }
+
+    operation = operation as InsertOperation;
+
+    let newFirst = this.first;
+    let newSecond = this.second;
+
+    if (this.first.getPositionStart() >= operation.getPosition()) {
+      newFirst = new DeleteOperation(newFirst.getPositionStart() - operation.getInsertString().length, newFirst.getAmount());
+    }
+
+    if (this.second.getPositionStart() >= operation.getPosition()) {
+      newSecond = new DeleteOperation(newSecond.getPositionStart() - operation.getInsertString().length, newSecond.getAmount());
+    }
+
+    if (newFirst.getPositionStart() + newFirst.getAmount() === newSecond.getPositionStart()) {
+      return new DeleteOperation(newFirst.getPositionStart(), newFirst.getAmount() + newSecond.getAmount());
+    }
   }
 }
 

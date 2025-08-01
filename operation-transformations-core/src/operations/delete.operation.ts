@@ -1,6 +1,11 @@
 import { Operation } from '../operation.ts';
-import { getOperationStartEnd, IntersectionType, intersectOperations } from '../utils/operations-intersections.util.ts';
-import { saveLi } from '../utils/operations-utilities.ts';
+import {
+  getOperationStartEnd,
+  intersectDeleteInsertOperations,
+  IntersectionType,
+  intersectOperations,
+} from '../utils/operations-intersections.util.ts';
+import { checkLi, recoverLi, saveLi } from '../utils/operations-utilities.ts';
 import { JointDeleteOperation } from './joint-delete.operation.ts';
 import { InsertOperation } from './insert.operation.ts';
 
@@ -26,6 +31,9 @@ export class DeleteOperation {
   }
 
   exclude(operation: Operation) {
+    if (checkLi(operation, this)) {
+      return recoverLi(operation, this);
+    }
     const overlapType = intersectOperations(this, operation);
 
     const operationStartEnd = getOperationStartEnd(operation);
@@ -42,6 +50,9 @@ export class DeleteOperation {
 
   include(operation: Operation) {
     let overlapType = intersectOperations(this, operation);
+    if(operation instanceof InsertOperation){
+      overlapType = intersectDeleteInsertOperations(this, operation);
+    }
 
     const operationStartEnd = getOperationStartEnd(operation);
 
@@ -81,5 +92,9 @@ export class DeleteOperation {
 
         throw 'unexpected operation';
     }
+  }
+
+  toString() {
+    return this.constructor.name + `${this.positionStart} ${this.amount}`;
   }
 }

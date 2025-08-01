@@ -12,7 +12,6 @@ export enum IntersectionType {
 export function intersectOperations(operationA: Operation, operationB: Operation): IntersectionType {
   const operationARange = getOperationStartEnd(operationA);
   const operationBRange = getOperationStartEnd(operationB);
-
   if (operationARange.end <= operationBRange.start) {
     return IntersectionType.OnTheRight;
   }
@@ -38,6 +37,24 @@ export function intersectInsertOperations(operationA: Operation, operationB: Ope
 
   return IntersectionType.Overlap;
 }
+
+
+export function intersectDeleteInsertOperations(operationA: DeleteOperation, operationB: InsertOperation): IntersectionType {
+
+  const operationARange = getOperationStartEnd(operationA);
+  const operationBRange = getOperationStartEnd(operationB);
+
+  if (operationBRange.start <= operationARange.start) {
+    return IntersectionType.OnTheLeft;
+  }
+
+  if (operationARange.end <= operationBRange.start) {
+    return IntersectionType.OnTheRight;
+  }
+
+  return IntersectionType.Overlap;
+}
+
 
 export function getOperationStartEnd(operation: Operation): { start: number, end: number, lengthDiff: number } {
   if (operation instanceof InsertOperation) {

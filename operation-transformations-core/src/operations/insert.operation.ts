@@ -1,6 +1,6 @@
 import { Operation } from '../operation.ts';
 import {
-  getOperationStartEnd,
+  getOperationStartEnd, intersectDeleteInsertOperations,
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
@@ -34,10 +34,28 @@ export class InsertOperation {
     return input.substring(0, this.position) + this.insertString + input.substring(this.position, input.length);
   }
 
+  exclude(operation: Operation) {
+    let overlapType = intersectOperations(this, operation);
+
+    if(operation instanceof DeleteOperation){
+      overlapType = intersectDeleteInsertOperations(operation, this);
+    }
+    const operationStartEnd = getOperationStartEnd(operation);
+
+    switch (overlapType) {
+      case IntersectionType.OnTheLeft:
+        return new InsertOperation(this.position - operationStartEnd.lengthDiff, this.getInsertString());
+      case IntersectionType.OnTheRight:
+        return new InsertOperation(this.position, this.getInsertString());
+      case IntersectionType.Overlap:
+        throw 'Insert Exclude overlap is not handled :(';
+    }
+  }
+
   include(operation: Operation) {
     let overlapType = intersectOperations(this, operation);
 
-    if(operation instanceof InsertOperation){
+    if (operation instanceof InsertOperation) {
       overlapType = intersectInsertOperations(this, operation);
     }
 
@@ -61,13 +79,16 @@ export class InsertOperation {
           return result;
         }
 
-        if(operation instanceof InsertOperation){
-          console.log('overlap')
+        if (operation instanceof InsertOperation) {
           return new InsertOperation(operation.getPosition(), operation.getInsertString());
         }
 
         throw 'Unexpected operation type';
         break;
     }
+  }
+
+  toString() {
+    return this.constructor.name + `${this.position} ${this.insertString}`;
   }
 }
