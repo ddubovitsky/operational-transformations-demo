@@ -1,21 +1,31 @@
-import { Operation } from '../operation.ts';
 import {
-  getOperationStartEnd, intersectDeleteInsertOperations,
+  getOperationStartEnd,
+  intersectDeleteInsertOperations,
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
 } from '../utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
 import { saveLi } from '../utils/operations-utilities.ts';
+import { Operation } from './operation.interface.ts';
+import { StateVector } from '../state-vector/state-vector.class.ts';
+import { TimestampedOperation } from './timestamped-operation.ts';
 
-export class InsertOperation {
+export class InsertOperation implements Operation {
 
-  private insertString: string;
-  private position: number;
+  private readonly insertString: string;
+  private readonly position: number;
 
   constructor(position: number, insertString: string) {
     this.insertString = insertString;
     this.position = position;
+  }
+
+  timestamp(vector: StateVector, siteId: number): TimestampedOperation {
+    return new TimestampedOperation(
+      this, vector,
+      siteId,
+    );
   }
 
   getInsertString() {
@@ -37,7 +47,7 @@ export class InsertOperation {
   exclude(operation: Operation) {
     let overlapType = intersectOperations(this, operation);
 
-    if(operation instanceof DeleteOperation){
+    if (operation instanceof DeleteOperation) {
       overlapType = intersectDeleteInsertOperations(operation, this);
     }
     const operationStartEnd = getOperationStartEnd(operation);

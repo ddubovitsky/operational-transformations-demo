@@ -1,10 +1,12 @@
 import { DeleteOperation } from './delete.operation.ts';
-import { Operation } from '../operation.ts';
 import { InsertOperation } from './insert.operation.ts';
+import { Operation } from './operation.interface.ts';
+import { StateVector } from '../state-vector/state-vector.class.ts';
+import { TimestampedOperation } from './timestamped-operation.ts';
 
-export class JointDeleteOperation {
-  private first: DeleteOperation;
-  private second: DeleteOperation;
+export class JointDeleteOperation implements Operation {
+  private readonly first: DeleteOperation;
+  private readonly second: DeleteOperation;
 
   constructor(first: DeleteOperation, second: DeleteOperation) {
     this.first = first;
@@ -27,6 +29,10 @@ export class JointDeleteOperation {
     return resultString;
   }
 
+  include(operation: Operation): Operation {
+    throw 'Joint operation should not include operations';
+  }
+
   exclude(operation: Operation) {
     if (operation instanceof JointDeleteOperation) {
       throw 'Cannot exclude delete from  joint operation';
@@ -35,22 +41,29 @@ export class JointDeleteOperation {
       throw 'not yer support exclude from delete operation';
     }
 
-    operation = operation as InsertOperation;
+    const insertOperation = operation as InsertOperation;
 
     let newFirst = this.first;
     let newSecond = this.second;
 
-    if (this.first.getPositionStart() >= operation.getPosition()) {
-      newFirst = new DeleteOperation(newFirst.getPositionStart() - operation.getInsertString().length, newFirst.getAmount());
+    if (this.first.getPositionStart() >= insertOperation.getPosition()) {
+      newFirst = new DeleteOperation(newFirst.getPositionStart() - insertOperation.getInsertString().length, newFirst.getAmount());
     }
 
-    if (this.second.getPositionStart() >= operation.getPosition()) {
-      newSecond = new DeleteOperation(newSecond.getPositionStart() - operation.getInsertString().length, newSecond.getAmount());
+    if (this.second.getPositionStart() >= insertOperation.getPosition()) {
+      newSecond = new DeleteOperation(newSecond.getPositionStart() - insertOperation.getInsertString().length, newSecond.getAmount());
     }
 
     if (newFirst.getPositionStart() + newFirst.getAmount() === newSecond.getPositionStart()) {
       return new DeleteOperation(newFirst.getPositionStart(), newFirst.getAmount() + newSecond.getAmount());
     }
+  }
+
+  timestamp(vector: StateVector, siteId: number): TimestampedOperation {
+    return new TimestampedOperation(
+      this, vector,
+      siteId,
+    );
   }
 }
 

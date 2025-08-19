@@ -1,10 +1,7 @@
 // import { Operation } from './operation.ts';
-import { DeleteOperation } from '../operations/delete.operation.ts';
-import { InsertOperation } from '../operations/insert.operation.ts';
-import { JointDeleteOperation } from '../operations/joint-delete.operation.ts';
 import { DoubleMap } from './double-map.class.ts';
+import { Operation } from '../operations/operation.interface.ts';
 
-type Operation = DeleteOperation | InsertOperation | JointDeleteOperation;
 
 const savedOps = new DoubleMap();
 

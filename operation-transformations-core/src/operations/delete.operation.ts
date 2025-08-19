@@ -1,4 +1,3 @@
-import { Operation } from '../operation.ts';
 import {
   getOperationStartEnd,
   intersectDeleteInsertOperations,
@@ -8,8 +7,11 @@ import {
 import { checkLi, recoverLi, saveLi } from '../utils/operations-utilities.ts';
 import { JointDeleteOperation } from './joint-delete.operation.ts';
 import { InsertOperation } from './insert.operation.ts';
+import { Operation } from './operation.interface.ts';
+import { StateVector } from '../state-vector/state-vector.class.ts';
+import { TimestampedOperation } from './timestamped-operation.ts';
 
-export class DeleteOperation {
+export class DeleteOperation implements Operation {
   private amount: number;
   private positionStart: number;
 
@@ -48,9 +50,9 @@ export class DeleteOperation {
     }
   }
 
-  include(operation: Operation) {
+  include(operation: Operation): Operation {
     let overlapType = intersectOperations(this, operation);
-    if(operation instanceof InsertOperation){
+    if (operation instanceof InsertOperation) {
       overlapType = intersectDeleteInsertOperations(this, operation);
     }
 
@@ -92,6 +94,13 @@ export class DeleteOperation {
 
         throw 'unexpected operation';
     }
+  }
+
+  timestamp(vector: StateVector, siteId: number): TimestampedOperation {
+    return new TimestampedOperation(
+      this, vector,
+      siteId,
+    );
   }
 
   toString() {
