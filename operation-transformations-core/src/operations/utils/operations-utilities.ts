@@ -1,6 +1,6 @@
 // import { Operation } from './operation.ts';
 import { DoubleMap } from './double-map.class.ts';
-import { Operation } from '../operations/operation.interface.ts';
+import { Operation } from '../operation.interface.ts';
 
 
 const savedOps = new DoubleMap();

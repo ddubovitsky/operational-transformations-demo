@@ -1,7 +1,7 @@
 import { Operation } from '../operation.ts';
-import { InsertOperation } from '../operations/insert.operation.ts';
-import { DeleteOperation } from '../operations/delete.operation.ts';
-import { JointDeleteOperation } from '../operations/joint-delete.operation.ts';
+import { InsertOperation } from '../insert.operation.ts';
+import { DeleteOperation } from '../delete.operation.ts';
+import { JointDeleteOperation } from '../joint-delete.operation.ts';
 
 export enum IntersectionType {
   OnTheLeft = 'OnTheLeft',   // a(bc)d[ef]g  [] <-- op A, () <--- op B

@@ -4,9 +4,9 @@ import {
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
-} from '../utils/operations-intersections.util.ts';
+} from './utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
-import { saveLi } from '../utils/operations-utilities.ts';
+import { saveLi } from './utils/operations-utilities.ts';
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';

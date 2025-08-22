@@ -3,8 +3,8 @@ import {
   intersectDeleteInsertOperations,
   IntersectionType,
   intersectOperations,
-} from '../utils/operations-intersections.util.ts';
-import { checkLi, recoverLi, saveLi } from '../utils/operations-utilities.ts';
+} from './utils/operations-intersections.util.ts';
+import { checkLi, recoverLi, saveLi } from './utils/operations-utilities.ts';
 import { JointDeleteOperation } from './joint-delete.operation.ts';
 import { InsertOperation } from './insert.operation.ts';
 import { Operation } from './operation.interface.ts';

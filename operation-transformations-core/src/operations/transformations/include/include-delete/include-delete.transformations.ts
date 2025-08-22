@@ -1,6 +1,6 @@
-import { DeleteOperation } from '../../../operations/delete.operation.ts';
-import { InsertOperation } from '../../../operations/insert.operation.ts';
-import { JointDeleteOperation } from '../../../operations/joint-delete.operation.ts';
+import { DeleteOperation } from '../../../delete.operation.ts';
+import { InsertOperation } from '../../../insert.operation.ts';
+import { JointDeleteOperation } from '../../../joint-delete.operation.ts';
 import { saveLi } from '../../../utils/operations-utilities.ts';
 
 
