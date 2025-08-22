@@ -42,8 +42,12 @@ export class Site {
   }
 
   addRemoteOperation(addedOperation: TimestampedOperation) {
+    this.executeOperation(addedOperation);
+    this.executePendingOperations();
+  }
+
+  private executeOperation(addedOperation: TimestampedOperation) {
     if (!preconditionStrategy.canExecuteOperation(this.stateVector, addedOperation.vector, addedOperation.siteId)) {
-      console.log('store operation', addedOperation.siteId);
       this.pendingSiteOperations.storeOperation(addedOperation);
       return;
     }
@@ -54,15 +58,13 @@ export class Site {
       addedOperation.siteId,
       addedOperation.vector.getSiteCounter(addedOperation.siteId) + 1, // next since this one is accounted already
     );
-
-    this.executePendingOperations();
   }
 
   private executePendingOperations() {
     const pendingOperations = this.pendingSiteOperations.getOperationsList();
-    pendingOperations.forEach((operation)=>{
+    pendingOperations.forEach((operation) => {
       this.pendingSiteOperations.removeOperation(operation);
-      this.addRemoteOperation(operation);
-    })
+      this.executeOperation(operation);
+    });
   }
 }
