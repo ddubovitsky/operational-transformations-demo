@@ -24,4 +24,22 @@ describe('State Vector', (t) => {
     const resultStateVector = stateVector.increment(TestSites.Site2);
     assert.deepEqual(resultStateVector, StateVector.create(({ [TestSites.Site1]: 3, [TestSites.Site2]: 1 })));
   });
+
+
+  describe('State vector comparison', () => {
+    test('State vector counter should treat empty state as 0, and 1 is contextually succeeding', () => {
+      const stateVector = StateVector.create();
+      const stateVector2 = StateVector.create({ [TestSites.Site1]: 1 });
+      assert.ok(stateVector.isContextuallyPreceding(stateVector2, TestSites.Site1));
+    });
+
+    test('State vector should have same site context equal if they are exual', () => {
+      const stateVector =  StateVector.create({ [TestSites.Site1]: 1 });
+      const stateVector2 = StateVector.create({ [TestSites.Site1]: 1 });
+      assert.ok(stateVector.isEqualForSite(stateVector2, TestSites.Site1));
+    });
+  });
+
+
+
 });

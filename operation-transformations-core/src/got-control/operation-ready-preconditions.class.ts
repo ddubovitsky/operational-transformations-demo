@@ -6,7 +6,7 @@ export class PreconditionStrategy {
     operationStateVector: StateVector,
     siteId: number,
   ): boolean {
-    const precondition1 = this.hasContextuallyPrecedingOperationForSite(
+    const precondition1 = this.siteContextIsEqualToOperationContext(
       currentState,
       operationStateVector,
       siteId,
@@ -21,12 +21,12 @@ export class PreconditionStrategy {
     return precondition1 && precondition2;
   }
 
-  private hasContextuallyPrecedingOperationForSite(
+  private siteContextIsEqualToOperationContext(
     currentState: StateVector,
     operationStateVector: StateVector,
     targetSiteId: number,
   ): boolean {
-    return currentState.isContextuallyPreceding(operationStateVector, targetSiteId);
+    return currentState.isEqualForSite(operationStateVector, targetSiteId);
   }
 
   private hasAllKnownOperationsForOtherSites(

@@ -6,30 +6,20 @@ import { PreconditionStrategy } from '../got-control/operation-ready-preconditio
 const preconditionStrategy = new PreconditionStrategy();
 
 class PendingOperations {
-  private pendingSiteOperationsMap: Record<number, Set<TimestampedOperation>> = {};
+  private pendingSiteOperations = new Set<TimestampedOperation>();
 
   storeOperation(operation: TimestampedOperation) {
-    const pendingSet = this.pendingSiteOperationsMap[operation.siteId] ?? new Set();
-    pendingSet.add(operation);
-    this.pendingSiteOperationsMap[operation.siteId] = pendingSet;
+    this.pendingSiteOperations.add(operation);
   }
 
   removeOperation(operation: TimestampedOperation) {
-    const pendingSet = this.pendingSiteOperationsMap[operation.siteId] ?? new Set();
-    pendingSet.delete(operation);
-    this.pendingSiteOperationsMap[operation.siteId] = pendingSet;
+    this.pendingSiteOperations.delete(operation);
   }
 
-  popSiteOperation(siteId: number): TimestampedOperation | null {
-    const pendingSet = this.pendingSiteOperationsMap[siteId] ?? new Set();
-
-    if (!pendingSet.size) {
-      return null;
-    }
-
-    const newestOperation = Array.from(pendingSet).sort((a, b) => a.compare(b))[0];
-    this.removeOperation(newestOperation);
-    return newestOperation;
+  getOperationsList(): TimestampedOperation[] | null {
+    return Array
+      .from(this.pendingSiteOperations)
+      .sort((a, b) => a.compare(b));
   }
 }
 
@@ -53,6 +43,7 @@ export class Site {
 
   addRemoteOperation(addedOperation: TimestampedOperation) {
     if (!preconditionStrategy.canExecuteOperation(this.stateVector, addedOperation.vector, addedOperation.siteId)) {
+      console.log('store operation', addedOperation.siteId);
       this.pendingSiteOperations.storeOperation(addedOperation);
       return;
     }
@@ -61,16 +52,17 @@ export class Site {
 
     this.stateVector = this.stateVector.setSiteCounter(
       addedOperation.siteId,
-      addedOperation.vector.getSiteCounter(addedOperation.siteId),
+      addedOperation.vector.getSiteCounter(addedOperation.siteId) + 1, // next since this one is accounted already
     );
 
     this.executePendingOperations(addedOperation.siteId);
   }
 
   private executePendingOperations(siteId: number) {
-    const operation = this.pendingSiteOperations.popSiteOperation(siteId);
-    if (operation) {
+    const pendingOperations = this.pendingSiteOperations.getOperationsList();
+    pendingOperations.forEach((operation)=>{
+      this.pendingSiteOperations.removeOperation(operation);
       this.addRemoteOperation(operation);
-    }
+    })
   }
 }

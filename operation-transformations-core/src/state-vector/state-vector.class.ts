@@ -57,4 +57,8 @@ export class StateVector {
     }
     return this.getSiteCounter(targetSiteId) >= otherState.getSiteCounter(targetSiteId);
   }
+
+  isEqualForSite(stateVector2: StateVector, targetSiteId: number) {
+    return this.getSiteCounter(targetSiteId) == stateVector2.getSiteCounter(targetSiteId);
+  }
 }
