@@ -55,10 +55,10 @@ export class Site {
       addedOperation.vector.getSiteCounter(addedOperation.siteId) + 1, // next since this one is accounted already
     );
 
-    this.executePendingOperations(addedOperation.siteId);
+    this.executePendingOperations();
   }
 
-  private executePendingOperations(siteId: number) {
+  private executePendingOperations() {
     const pendingOperations = this.pendingSiteOperations.getOperationsList();
     pendingOperations.forEach((operation)=>{
       this.pendingSiteOperations.removeOperation(operation);
