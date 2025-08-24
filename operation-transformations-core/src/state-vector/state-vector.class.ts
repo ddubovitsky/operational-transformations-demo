@@ -61,4 +61,17 @@ export class StateVector {
   isEqualForSite(stateVector2: StateVector, targetSiteId: number) {
     return this.getSiteCounter(targetSiteId) == stateVector2.getSiteCounter(targetSiteId);
   }
+
+  isContextuallyEqual(other: StateVector) {
+    if (Object.keys(this.state).length !== Object.keys(other.state).length) {
+      return false;
+    }
+    for (const key in this.state) {
+      if (this.state[key] !== other[key]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }

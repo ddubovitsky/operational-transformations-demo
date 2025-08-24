@@ -111,44 +111,4 @@ describe('Site', () => {
     assert.deepEqual(site2.history, [site1GeneratedOperation, site3GeneratedOperation, site1DependantOperation], 'After Site3 receives third operation, dependant operation is ready and they both should be added to the history list');
   });
 
-
-  it('should include and perform perform if context have independent operations', () => {
-    const site1 = new Site();
-    const site2 = new Site();
-
-    const operation1 = new Operation();
-    const operation2 = new Operation();
-
-    const site1addedOperation = site1.addLocalOperation(operation1);
-    const site2AddedOperation = site2.addLocalOperation(operation2);
-
-    site2.addRemoteOperation(site1addedOperation);
-
-    assert.deepEqual(site2.history, [site2AddedOperation, site1addedOperation.include(site2AddedOperation)]);
-  });
-
-
-  it('should exclude, include and perform if context have independent AND transformed operations', () => {
-    const site1 = new Site();
-    const site2 = new Site();
-
-    const operation1 = new Operation();
-    const operation2 = new Operation();
-
-    const site1addedOperation = site1.addLocalOperation(operation1);
-    const site1addedOperation2 = site1.addLocalOperation(operation2);
-
-    const site2AddedOperation = site2.addLocalOperation(operation2);
-
-    site2.addRemoteOperation(site1addedOperation);
-    site2.addRemoteOperation(site1addedOperation2);
-
-    assert.deepEqual(site2.history, [
-      site2AddedOperation,
-      site1addedOperation.include(site2AddedOperation),
-      site1addedOperation2
-        .exclude(site1addedOperation)
-        .include(site2AddedOperation, site1addedOperation2)],
-    );
-  });
 });

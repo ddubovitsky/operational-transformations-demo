@@ -16,4 +16,28 @@ export class TimestampedOperation {
 
     return this.vector.getSiteCounter(this.siteId) - operation.vector.getSiteCounter(operation.siteId);
   }
+
+  include(operation: TimestampedOperation) {
+    return new TimestampedOperation(
+      this.operation.include(operation.operation),
+      this.vector,
+      this.siteId,
+    );
+  }
+
+  exclude(operation: TimestampedOperation) {
+    return new TimestampedOperation(
+      this.operation.include(operation.operation),
+      this.vector,
+      this.siteId,
+    );
+  }
+
+  clone() {
+    return new TimestampedOperation(
+      this.operation.clone(),
+      this.vector,
+      this.siteId,
+    );
+  }
 }

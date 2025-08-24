@@ -98,9 +98,14 @@ export class DeleteOperation implements Operation {
 
   timestamp(vector: StateVector, siteId: number): TimestampedOperation {
     return new TimestampedOperation(
-      this, vector,
+      this,
+      vector,
       siteId,
     );
+  }
+
+  clone(): Operation {
+    return new DeleteOperation(this.positionStart, this.amount);
   }
 
   toString() {

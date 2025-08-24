@@ -7,5 +7,7 @@ export interface Operation {
   exclude(operation: Operation): Operation;
 
   timestamp(vector: StateVector, siteId: number): TimestampedOperation
+
+  clone(): Operation;
 }
 

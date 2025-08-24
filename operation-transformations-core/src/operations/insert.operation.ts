@@ -28,6 +28,10 @@ export class InsertOperation implements Operation {
     );
   }
 
+  clone(): Operation {
+    return new InsertOperation(this.position, this.insertString);
+  }
+
   getInsertString() {
     return this.insertString;
   }

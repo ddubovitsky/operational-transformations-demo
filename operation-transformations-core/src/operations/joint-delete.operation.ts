@@ -59,6 +59,14 @@ export class JointDeleteOperation implements Operation {
     }
   }
 
+  clone(): Operation {
+    return new JointDeleteOperation(
+      this.first,
+      this.second,
+    );
+  }
+
+
   timestamp(vector: StateVector, siteId: number): TimestampedOperation {
     return new TimestampedOperation(
       this, vector,
