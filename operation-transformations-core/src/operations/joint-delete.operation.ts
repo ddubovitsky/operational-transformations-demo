@@ -1,7 +1,7 @@
 import { DeleteOperation } from './delete.operation.ts';
 import { InsertOperation } from './insert.operation.ts';
 import { Operation } from './operation.interface.ts';
-import { StateVector } from '../state-vector/state-vector.class.ts';
+import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
 
 export class JointDeleteOperation implements Operation {

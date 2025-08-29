@@ -1,6 +1,6 @@
-import { StateVector } from '../state-vector/state-vector.class.ts';
+import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 
-export class PreconditionStrategy {
+export class CanExecuteOperationStrategy {
   canExecuteOperation(
     currentState: StateVector,
     operationStateVector: StateVector,

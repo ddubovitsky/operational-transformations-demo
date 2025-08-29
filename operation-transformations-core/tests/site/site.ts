@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { Site } from '../../src/site/site.ts';
 import { InsertOperation } from '../../src/operations/insert.operation.ts';
-import { StateVector } from '../../src/state-vector/state-vector.class.ts';
+import { StateVector } from '../../src/utils/state-vector/state-vector.class.ts';
 
 
 enum TestSites {
@@ -105,7 +105,7 @@ describe('Site', () => {
     assert.deepEqual(site2.history, [site1GeneratedOperation], 'Site2 adds first operations since context are equivalent');
 
     site2.addRemoteOperation(site1DependantOperation);
-    assert.deepEqual(site2.history, [site1GeneratedOperation], 'Site2 does not add second operation, since it depends on the site3 operation to be present too');
+    assert.deepEqual(site2.history, [site1GeneratedOperation], 'Site2 does not add second operation, since it depends on the site3 operation to be present too' + `${site2.history.length} should be 1`);
     site2.addRemoteOperation(site3GeneratedOperation);
 
     assert.deepEqual(site2.history, [site1GeneratedOperation, site3GeneratedOperation, site1DependantOperation], 'After Site3 receives third operation, dependant operation is ready and they both should be added to the history list');

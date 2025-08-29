@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { StateVector } from '../../src/state-vector/state-vector.class.ts';
-import { PreconditionStrategy } from '../../src/got-control/operation-ready-preconditions.class.ts';
+import { StateVector } from '../../src/utils/state-vector/state-vector.class.ts';
+import { CanExecuteOperationStrategy } from '../../src/got-control/operation-ready-preconditions.class.ts';
 
 
 enum TestSites {
@@ -9,7 +9,7 @@ enum TestSites {
   Site2 = 2
 }
 
-const preconditionStrategy = new PreconditionStrategy();
+const preconditionStrategy = new CanExecuteOperationStrategy();
 
 describe('Precondition 1', () => {
   it('Operation is ready when state vector is empty', () => {

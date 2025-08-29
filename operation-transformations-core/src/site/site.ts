@@ -1,37 +1,18 @@
-import { StateVector } from '../state-vector/state-vector.class.ts';
+import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from '../operations/timestamped-operation.ts';
 import { Operation } from '../operations/operation.interface.ts';
-import { PreconditionStrategy } from '../got-control/operation-ready-preconditions.class.ts';
-
-const preconditionStrategy = new PreconditionStrategy();
-
-class PendingOperations {
-  private pendingSiteOperations = new Set<TimestampedOperation>();
-
-  storeOperation(operation: TimestampedOperation) {
-    this.pendingSiteOperations.add(operation);
-  }
-
-  removeOperation(operation: TimestampedOperation) {
-    this.pendingSiteOperations.delete(operation);
-  }
-
-  getOperationsList(): TimestampedOperation[] | null {
-    return Array
-      .from(this.pendingSiteOperations)
-      .sort((a, b) => a.compare(b));
-  }
-}
+import { OperationsBufferedFilter } from './operations-buffered-filter.ts';
 
 export class Site {
-  constructor(private siteId: number) {
+  private operationsBufferedFilter =  new OperationsBufferedFilter();
+
+  constructor(public siteId: number) {
   }
 
   history: TimestampedOperation[] = [];
 
   stateVector = StateVector.create();
 
-  private pendingSiteOperations = new PendingOperations();
 
   addLocalOperation(operation1: Operation) {
     const operation = operation1.timestamp(this.stateVector, this.siteId);
@@ -42,29 +23,20 @@ export class Site {
   }
 
   addRemoteOperation(addedOperation: TimestampedOperation) {
-    this.executeOperation(addedOperation);
-    this.executePendingOperations();
+    this.operationsBufferedFilter.addAndExecutePending(
+      addedOperation,
+      this.stateVector,
+      (operation) => this.executeOperation(operation),
+    );
   }
 
-  private executeOperation(addedOperation: TimestampedOperation) {
-    if (!preconditionStrategy.canExecuteOperation(this.stateVector, addedOperation.vector, addedOperation.siteId)) {
-      this.pendingSiteOperations.storeOperation(addedOperation);
-      return;
-    }
-
+  private executeOperation(addedOperation: TimestampedOperation): StateVector {
     this.history.push(addedOperation);
-
     this.stateVector = this.stateVector.setSiteCounter(
       addedOperation.siteId,
       addedOperation.vector.getSiteCounter(addedOperation.siteId) + 1, // next since this one is accounted already
     );
+    return this.stateVector;
   }
 
-  private executePendingOperations() {
-    const pendingOperations = this.pendingSiteOperations.getOperationsList();
-    pendingOperations.forEach((operation) => {
-      this.pendingSiteOperations.removeOperation(operation);
-      this.executeOperation(operation);
-    });
-  }
 }

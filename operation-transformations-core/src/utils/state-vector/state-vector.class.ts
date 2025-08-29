@@ -74,4 +74,20 @@ export class StateVector {
 
     return true;
   }
+
+  isIndependentOf(stateVector: StateVector, site: number) {
+    const isSubsequent = this.getSiteCounter(site) === stateVector.getSiteCounter(site) - 1;
+
+    const sitesList = this.getSites();
+    sitesList.delete(site);
+
+    // there exists at least one site, for which new vector does not have latest operation
+    const hasIndependentSiteOperation =  Array.from(sitesList).some((site) => {
+      console.log(stateVector.getSiteCounter(site), this.getSiteCounter(site));
+      return stateVector.getSiteCounter(site) < this.getSiteCounter(site);
+    });
+
+    console.log(isSubsequent, hasIndependentSiteOperation);
+    return isSubsequent && hasIndependentSiteOperation;
+  }
 }

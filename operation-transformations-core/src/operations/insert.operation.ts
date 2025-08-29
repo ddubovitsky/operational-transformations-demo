@@ -8,7 +8,7 @@ import {
 import { DeleteOperation } from './delete.operation.ts';
 import { saveLi } from './utils/operations-utilities.ts';
 import { Operation } from './operation.interface.ts';
-import { StateVector } from '../state-vector/state-vector.class.ts';
+import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
 
 export class InsertOperation implements Operation {

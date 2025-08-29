@@ -1,6 +1,6 @@
 import test, { describe } from 'node:test';
 import assert from 'node:assert';
-import { StateVector } from '../../src/state-vector/state-vector.class.ts';
+import { StateVector } from '../../src/utils/state-vector/state-vector.class.ts';
 
 enum TestSites {
   Site1 = 1,
@@ -33,13 +33,59 @@ describe('State Vector', (t) => {
       assert.ok(stateVector.isContextuallyPreceding(stateVector2, TestSites.Site1));
     });
 
-    test('State vector should have same site context equal if they are exual', () => {
-      const stateVector =  StateVector.create({ [TestSites.Site1]: 1 });
+    test('State vector should have same site context equal if they are equal', () => {
+      const stateVector = StateVector.create({ [TestSites.Site1]: 1 });
       const stateVector2 = StateVector.create({ [TestSites.Site1]: 1 });
       assert.ok(stateVector.isEqualForSite(stateVector2, TestSites.Site1));
     });
   });
 
 
+  describe('State Vector operations independance', () => {
+    test('State vector should tell true if operations are independent on empty states', () => {
+      const stateVector = StateVector.create({
+        [TestSites.Site1]: 1,
+        [TestSites.Site2]: 1,
+      });
+      const stateVector2 = StateVector.create({
+        [TestSites.Site1]: 2,
+      });
+      assert.ok(stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+    });
+    test('State vector should tell false if operations are  not independent  on empty states', () => {
+      const stateVector = StateVector.create({ [TestSites.Site1]: 1 });
+      const stateVector2 = StateVector.create({ [TestSites.Site1]: 2 });
+      assert.ok(!stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+    });
+
+
+    test('State vector should tell true if operations are independent on populated states', () => {
+      const stateVector = StateVector.create({
+        [TestSites.Site1]: 1,
+        [TestSites.Site5]: 5,
+        [TestSites.Site6]: 3,
+      });
+      const stateVector2 = StateVector.create({
+        [TestSites.Site1]: 2,
+        [TestSites.Site5]: 2,
+        [TestSites.Site6]: 1,
+      });
+      assert.ok(stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+    });
+
+    test('State vector should tell false if operations are  not independent  on populated states', () => {
+      const stateVector = StateVector.create({
+        [TestSites.Site1]: 1,
+        [TestSites.Site5]: 5,
+        [TestSites.Site6]: 3,
+      });
+      const stateVector2 = StateVector.create({
+        [TestSites.Site2]: 2,
+        [TestSites.Site5]: 5,
+        [TestSites.Site6]: 3,
+      });
+      assert.ok(!stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+    });
+  });
 
 });

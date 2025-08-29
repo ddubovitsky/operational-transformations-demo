@@ -1,5 +1,5 @@
 import { Operation } from './operation.interface.ts';
-import { StateVector } from '../state-vector/state-vector.class.ts';
+import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 
 export class TimestampedOperation {
   constructor(
