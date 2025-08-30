@@ -17,6 +17,14 @@ export class TimestampedOperation {
     return this.vector.getSiteCounter(this.siteId) - operation.vector.getSiteCounter(operation.siteId);
   }
 
+  includeAll(operations: TimestampedOperation[]){
+    let operation: TimestampedOperation = this;
+    operations.forEach((it)=> {
+      operation = operation.include(it);
+    });
+    return operation;
+  }
+
   include(operation: TimestampedOperation) {
     return new TimestampedOperation(
       this.operation.include(operation.operation),

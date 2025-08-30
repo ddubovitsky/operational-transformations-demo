@@ -20,12 +20,21 @@ class TimestampedOperationObserveDecorator implements TimestampedOperation {
 
   constructor(
     private targetOperation: TimestampedOperation,
-    private collectingOperationsParameter: string[],
+    private collectingOperationsParameter: { type: string; operation: TimestampedOperation }[],
   ) {
   }
 
   get operation() {
     return this.targetOperation.operation;
+  }
+
+  includeAll(operations: TimestampedOperation[]) {
+    let operation: TimestampedOperation = this;
+    operations.forEach((it) => {
+      console.log('include');
+      operation = operation.include(it);
+    });
+    return operation;
   }
 
   get vector() {
@@ -41,12 +50,12 @@ class TimestampedOperationObserveDecorator implements TimestampedOperation {
   }
 
   exclude(operation: TimestampedOperation): TimestampedOperation {
-    this.collectingOperationsParameter.push('exclude');
+    this.collectingOperationsParameter.push({ type: 'exclude', operation: operation });
     return new TimestampedOperationObserveDecorator(this.targetOperation.exclude(operation), this.collectingOperationsParameter);
   }
 
   include(operation: TimestampedOperation): TimestampedOperation {
-    this.collectingOperationsParameter.push('include');
+    this.collectingOperationsParameter.push({ type: 'include', operation: operation });
     return new TimestampedOperationObserveDecorator(this.targetOperation.include(operation), this.collectingOperationsParameter);
   }
 
@@ -81,30 +90,81 @@ describe('OperationTransform strategy', (t) => {
   it('should include parallel operation if such exists', () => {
     const originSite = new Site(TestSites.Site1);
     const targetSite = new Site(TestSites.Site2);
-    const targetSiteParallelOperation = targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
 
+
+    // create some dependant operations
     const generatedOperation = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
-    const operationEvents = [];
-    const fixtureOperation = new TimestampedOperationObserveDecorator(generatedOperation, operationEvents);
+    targetSite.addRemoteOperation(generatedOperation);
 
-    operationTransformStrategy.transformOperation(targetSite, fixtureOperation);
-    assert.deepEqual(operationEvents, ['include']);
+    // independent target site operations from the origin site PV
+    const independent1 = targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
+    const independent2 = targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
+
+    const generatedIndependent = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
+
+    const operationEvents = [];
+    const fixtureOperation = new TimestampedOperationObserveDecorator(generatedIndependent, operationEvents);
+
+    const transformed = operationTransformStrategy.transformOperation(targetSite, fixtureOperation);
+    targetSite.addRemoteOperation(transformed);
+
+    assert.deepEqual(operationEvents, [{
+      type: 'include',
+      operation: independent1,
+    }, {
+      type: 'include',
+      operation: independent2,
+    }]);
   });
 
 
   it('If site has transformed operations, then should exclude them from target operation', () => {
     const originSite = new Site(TestSites.Site1);
     const targetSite = new Site(TestSites.Site2);
-    targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
 
+
+    // create some dependant operations
     const generatedOperation = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
-    targetSite.addRemoteOperation(operationTransformStrategy.transformOperation(targetSite, generatedOperation));
+    targetSite.addRemoteOperation(generatedOperation);
 
-    const generatedOperation2 = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
-    const operationEvents = [];
-    const fixtureOperation = new TimestampedOperationObserveDecorator(generatedOperation2, operationEvents);
+    // independent target site operations from the origin site PV
+    const independent1 = targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
+    const independent2 = targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
 
-    operationTransformStrategy.transformOperation(targetSite, fixtureOperation);
-    assert.deepEqual(operationEvents, ['exclude', 'include', 'include']);
+    const generatedIndependent = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
+
+    let operationEvents = [];
+    const fixtureOperation = new TimestampedOperationObserveDecorator(generatedIndependent, operationEvents);
+
+    const transformed = operationTransformStrategy.transformOperation(targetSite, fixtureOperation);
+    targetSite.addRemoteOperation(transformed);
+    assert.deepEqual(operationEvents, [{
+      type: 'include',
+      operation: independent1,
+    }, {
+      type: 'include',
+      operation: independent2,
+    }]);
+
+    operationEvents = [];
+
+    const generatedDependent = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
+
+    const fixtureOperation2 = new TimestampedOperationObserveDecorator(generatedDependent, operationEvents);
+
+    operationTransformStrategy.transformOperation(targetSite, fixtureOperation2);
+    assert.deepEqual(operationEvents, [
+      {
+        type: 'exclude',
+        operation: transformed,
+      },
+      {
+        type: 'include',
+        operation: independent1,
+      }, {
+        type: 'include',
+        operation: independent2,
+      }]);
+
   });
 });

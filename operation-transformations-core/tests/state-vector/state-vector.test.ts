@@ -48,13 +48,13 @@ describe('State Vector', (t) => {
         [TestSites.Site2]: 1,
       });
       const stateVector2 = StateVector.create({
-        [TestSites.Site1]: 2,
+        [TestSites.Site1]: 1,
       });
       assert.ok(stateVector.isIndependentOf(stateVector2, TestSites.Site1));
     });
     test('State vector should tell false if operations are  not independent  on empty states', () => {
       const stateVector = StateVector.create({ [TestSites.Site1]: 1 });
-      const stateVector2 = StateVector.create({ [TestSites.Site1]: 2 });
+      const stateVector2 = StateVector.create({ [TestSites.Site1]: 1 });
       assert.ok(!stateVector.isIndependentOf(stateVector2, TestSites.Site1));
     });
 
@@ -66,7 +66,7 @@ describe('State Vector', (t) => {
         [TestSites.Site6]: 3,
       });
       const stateVector2 = StateVector.create({
-        [TestSites.Site1]: 2,
+        [TestSites.Site1]: 1,
         [TestSites.Site5]: 2,
         [TestSites.Site6]: 1,
       });

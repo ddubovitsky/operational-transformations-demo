@@ -76,18 +76,17 @@ export class StateVector {
   }
 
   isIndependentOf(stateVector: StateVector, site: number) {
-    const isSubsequent = this.getSiteCounter(site) === stateVector.getSiteCounter(site) - 1;
+    const originalSiteSameContext = this.getSiteCounter(site) >= stateVector.getSiteCounter(site);
 
-    const sitesList = this.getSites();
+    const sitesList = this.getSites().union(stateVector.getSites());
     sitesList.delete(site);
 
     // there exists at least one site, for which new vector does not have latest operation
-    const hasIndependentSiteOperation =  Array.from(sitesList).some((site) => {
-      console.log(stateVector.getSiteCounter(site), this.getSiteCounter(site));
-      return stateVector.getSiteCounter(site) < this.getSiteCounter(site);
-    });
+    const hasIndependentSiteOperation = Array.from(sitesList).some((site) => {
+      return stateVector.getSiteCounter(site) <= this.getSiteCounter(site);
+    }) || sitesList.size === 0; // if states does not know about other sites means operations are truly independent
 
-    console.log(isSubsequent, hasIndependentSiteOperation);
-    return isSubsequent && hasIndependentSiteOperation;
+    console.log(hasIndependentSiteOperation);
+    return originalSiteSameContext && hasIndependentSiteOperation;
   }
 }
