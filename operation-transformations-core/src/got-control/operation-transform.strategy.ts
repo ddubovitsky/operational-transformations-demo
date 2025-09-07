@@ -1,5 +1,6 @@
 import { Site } from '../site/site.ts';
 import { TimestampedOperation } from '../operations/timestamped-operation.ts';
+import { OperationsList } from '../site/operations-list.ts';
 
 export class OperationTransformStrategy {
   transformOperation(site: Site, operation: TimestampedOperation) {
@@ -8,12 +9,41 @@ export class OperationTransformStrategy {
       console.log('literally same')
       return operation;
     }
-    const independentOperationIndex = site.history.findIndex((it) => it.vector.isIndependentOf(operation.vector, operation.siteId));
-    console.log('independent op index', independentOperationIndex);
-    const allAfterIndependentAreIndependent = site.history.slice(independentOperationIndex).every((it) => it.vector.isIndependentOf(operation.vector, operation.siteId));
-    if(allAfterIndependentAreIndependent){
-      console.log('include all');
-      return operation.includeAll(site.history.slice(independentOperationIndex));
+    const independentOperationIndex = site.history.indexOfFirstIndependentOperation(operation.vector, operation.siteId);
+    if(independentOperationIndex === -1){
+      console.log('no independent');
+      // no independent operations in HB mean that we should not do any additional transformations
+      return operation;
     }
+
+    const operationsAfterFirstIndependent = site.history.slice(independentOperationIndex);
+    const allAfterIndependentAreIndependent = operationsAfterFirstIndependent.allOperationsIndependentOf(operation.vector, operation.siteId);
+
+    console.log('allAfterIndependentAreIndependent');
+
+    if(allAfterIndependentAreIndependent){
+      return operation.includeAll(operationsAfterFirstIndependent.getList());
+    }
+
+    console.log('transform');
+    return this.transformOperationIncludingDependantOperations(operation, operationsAfterFirstIndependent);
+  }
+
+  private transformOperationIncludingDependantOperations(
+    operation: TimestampedOperation,
+    mixedOperationsList: OperationsList,
+  ){
+    const listOfDependentOperations = mixedOperationsList.getDependent(operation);
+    const operations = mixedOperationsList.getListCopy();
+    const originalOperations: TimestampedOperation[] = [];
+    while (listOfDependentOperations.length > 0){
+      const operation = listOfDependentOperations.shift();
+      const excludedOperation = operation.excludeAll(
+        operations.slice(0, operations.indexOf(operation))
+      );
+      const includedOgOperation = excludedOperation.includeAll(originalOperations);
+      originalOperations.push(includedOgOperation);
+    }
+    return operation.excludeAll(originalOperations).includeAll(mixedOperationsList.getList());
   }
 }

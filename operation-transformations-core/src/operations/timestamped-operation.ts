@@ -33,6 +33,14 @@ export class TimestampedOperation {
     );
   }
 
+  excludeAll(operations: TimestampedOperation[]){
+    let operation: TimestampedOperation = this;
+    operations.forEach((it)=> {
+      operation = operation.exclude(it);
+    });
+    return operation;
+  }
+
   exclude(operation: TimestampedOperation) {
     return new TimestampedOperation(
       this.operation.include(operation.operation),

@@ -86,7 +86,13 @@ export class StateVector {
       return stateVector.getSiteCounter(site) <= this.getSiteCounter(site);
     }) || sitesList.size === 0; // if states does not know about other sites means operations are truly independent
 
-    console.log(hasIndependentSiteOperation);
     return originalSiteSameContext && hasIndependentSiteOperation;
+  }
+
+  isDependentOn(stateVector: StateVector) {
+    const sitesList = this.getSites().union(stateVector.getSites());
+    return Array.from(sitesList).every((site) => {
+      return stateVector.getSiteCounter(site) <= this.getSiteCounter(site);
+    });
   }
 }

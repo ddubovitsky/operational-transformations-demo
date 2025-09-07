@@ -87,10 +87,9 @@ describe('OperationTransform strategy', (t) => {
     assert.deepEqual(operationEvents, []);
   });
 
-  it('should include parallel operation if such exists', () => {
+  it('should include parallel operations if such exists', () => {
     const originSite = new Site(TestSites.Site1);
     const targetSite = new Site(TestSites.Site2);
-
 
     // create some dependant operations
     const generatedOperation = originSite.addLocalOperation(new InsertOperation(1, 'abc'));

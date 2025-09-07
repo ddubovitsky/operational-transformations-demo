@@ -41,7 +41,7 @@ describe('State Vector', (t) => {
   });
 
 
-  describe('State Vector operations independance', () => {
+  describe('State Vector operations independence', () => {
     test('State vector should tell true if operations are independent on empty states', () => {
       const stateVector = StateVector.create({
         [TestSites.Site1]: 1,
@@ -85,6 +85,56 @@ describe('State Vector', (t) => {
         [TestSites.Site6]: 3,
       });
       assert.ok(!stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+    });
+
+    test('State vector depends on other operation if it knows about all the operations of other vector', () => {
+      const stateVector = StateVector.create({
+        [TestSites.Site1]: 2,
+        [TestSites.Site5]: 6,
+        [TestSites.Site6]: 3,
+      });
+
+      const stateVector2 = StateVector.create({
+        [TestSites.Site1]: 1,
+        [TestSites.Site5]: 5,
+        [TestSites.Site6]: 3,
+      });
+
+      assert.ok(stateVector.isDependentOn(stateVector2));
+    });
+
+    test('State vector does not depends on other operation if it there are opeations in other SV that origial SV does not know', () => {
+      const stateVector = StateVector.create({
+        [TestSites.Site1]: 2,
+        [TestSites.Site5]: 6,
+        [TestSites.Site6]: 3,
+      });
+
+      const stateVector2 = StateVector.create({
+        [TestSites.Site1]: 1,
+        [TestSites.Site2]: 1,
+        [TestSites.Site5]: 5,
+        [TestSites.Site6]: 3,
+      });
+
+      assert.ok(!stateVector.isDependentOn(stateVector2));
+    });
+
+    test('State vector does not depends on other operation if it there are opeations in other SV that origial SV does not know', () => {
+      const stateVector = StateVector.create({
+        [TestSites.Site1]: 2,
+        [TestSites.Site5]: 6,
+        [TestSites.Site6]: 3,
+      });
+
+      const stateVector2 = StateVector.create({
+        [TestSites.Site1]: 1,
+        [TestSites.Site2]: 1,
+        [TestSites.Site5]: 5,
+        [TestSites.Site6]: 8,
+      });
+
+      assert.ok(!stateVector.isDependentOn(stateVector2));
     });
   });
 

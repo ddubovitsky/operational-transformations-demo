@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { HistoryBuffer } from '../../src/site/history-buffer.ts';
+import { OperationsList } from '../../src/site/operations-list.ts';
 import { TimestampedOperation } from '../../src/operations/timestamped-operation.ts';
 import { StateVector } from '../../src/utils/state-vector/state-vector.class.ts';
 import assert from 'node:assert';
@@ -16,7 +16,7 @@ enum TestSites {
 
 describe('HistoryBuffer', (t) => {
   it('should return ture if independent operation exists', () => {
-    const historyBuffer = new HistoryBuffer();
+    const historyBuffer = new OperationsList();
 
     historyBuffer.add(
       new TimestampedOperation(
@@ -34,7 +34,7 @@ describe('HistoryBuffer', (t) => {
   });
 
   it('should return false if independent operation does not exist', () => {
-    const historyBuffer = new HistoryBuffer();
+    const historyBuffer = new OperationsList();
 
     historyBuffer.add(
       new TimestampedOperation(
