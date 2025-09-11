@@ -33,10 +33,10 @@ describe('State Vector', (t) => {
       assert.ok(stateVector.isContextuallyPreceding(stateVector2, TestSites.Site1));
     });
 
-    test('State vector should have same site context equal if they are equal', () => {
+    test('State vector should be preceding if they are consequential', () => {
       const stateVector = StateVector.create({ [TestSites.Site1]: 1 });
-      const stateVector2 = StateVector.create({ [TestSites.Site1]: 1 });
-      assert.ok(stateVector.isEqualForSite(stateVector2, TestSites.Site1));
+      const stateVector2 = StateVector.create({ [TestSites.Site1]: 2 });
+      assert.ok(stateVector.isPrecedingForSite(stateVector2, TestSites.Site1));
     });
   });
 
@@ -50,12 +50,13 @@ describe('State Vector', (t) => {
       const stateVector2 = StateVector.create({
         [TestSites.Site1]: 1,
       });
-      assert.ok(stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+      assert.ok(stateVector.isIndependentOf(stateVector2));
     });
+
     test('State vector should tell false if operations are  not independent  on empty states', () => {
       const stateVector = StateVector.create({ [TestSites.Site1]: 1 });
-      const stateVector2 = StateVector.create({ [TestSites.Site1]: 1 });
-      assert.ok(!stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+      const stateVector2 = StateVector.create({ [TestSites.Site1]: 2 });
+      assert.ok(!stateVector.isIndependentOf(stateVector2));
     });
 
 
@@ -70,7 +71,7 @@ describe('State Vector', (t) => {
         [TestSites.Site5]: 2,
         [TestSites.Site6]: 1,
       });
-      assert.ok(stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+      assert.ok(stateVector.isIndependentOf(stateVector2));
     });
 
     test('State vector should tell false if operations are  not independent  on populated states', () => {
@@ -80,11 +81,11 @@ describe('State Vector', (t) => {
         [TestSites.Site6]: 3,
       });
       const stateVector2 = StateVector.create({
-        [TestSites.Site2]: 2,
+        [TestSites.Site1]: 1,
         [TestSites.Site5]: 5,
         [TestSites.Site6]: 3,
       });
-      assert.ok(!stateVector.isIndependentOf(stateVector2, TestSites.Site1));
+      assert.ok(!stateVector.isIndependentOf(stateVector2));
     });
 
     test('State vector depends on other operation if it knows about all the operations of other vector', () => {

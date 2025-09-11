@@ -58,8 +58,8 @@ export class StateVector {
     return this.getSiteCounter(targetSiteId) >= otherState.getSiteCounter(targetSiteId);
   }
 
-  isEqualForSite(stateVector2: StateVector, targetSiteId: number) {
-    return this.getSiteCounter(targetSiteId) == stateVector2.getSiteCounter(targetSiteId);
+  isPrecedingForSite(stateVector2: StateVector, targetSiteId: number) {
+    return this.getSiteCounter(targetSiteId) === stateVector2.getSiteCounter(targetSiteId) -1;
   }
 
   isContextuallyEqual(other: StateVector) {
@@ -75,18 +75,15 @@ export class StateVector {
     return true;
   }
 
-  isIndependentOf(stateVector: StateVector, site: number) {
-    const originalSiteSameContext = this.getSiteCounter(site) >= stateVector.getSiteCounter(site);
-
+  isIndependentOf(stateVector: StateVector) {
     const sitesList = this.getSites().union(stateVector.getSites());
-    sitesList.delete(site);
 
     // there exists at least one site, for which new vector does not have latest operation
     const hasIndependentSiteOperation = Array.from(sitesList).some((site) => {
-      return stateVector.getSiteCounter(site) <= this.getSiteCounter(site);
+      return stateVector.getSiteCounter(site) < this.getSiteCounter(site);
     }) || sitesList.size === 0; // if states does not know about other sites means operations are truly independent
 
-    return originalSiteSameContext && hasIndependentSiteOperation;
+    return hasIndependentSiteOperation;
   }
 
   isDependentOn(stateVector: StateVector) {

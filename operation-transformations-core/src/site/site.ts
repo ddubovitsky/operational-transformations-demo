@@ -16,9 +16,9 @@ export class Site {
 
 
   addLocalOperation(operation1: Operation) {
+    this.stateVector = this.stateVector.increment(this.siteId);
     const operation = operation1.timestamp(this.stateVector, this.siteId);
     this.history.add(operation);
-    this.stateVector = this.stateVector.increment(this.siteId);
 
     return operation;
   }
@@ -35,7 +35,7 @@ export class Site {
     this.history.add(addedOperation);
     this.stateVector = this.stateVector.setSiteCounter(
       addedOperation.siteId,
-      addedOperation.vector.getSiteCounter(addedOperation.siteId) + 1, // next since this one is accounted already
+      addedOperation.vector.getSiteCounter(addedOperation.siteId), // next since this one is accounted already
     );
     return this.stateVector;
   }

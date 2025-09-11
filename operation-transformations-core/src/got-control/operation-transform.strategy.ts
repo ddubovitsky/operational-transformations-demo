@@ -9,7 +9,10 @@ export class OperationTransformStrategy {
       console.log('literally same')
       return operation;
     }
-    const independentOperationIndex = site.history.indexOfFirstIndependentOperation(operation.vector, operation.siteId);
+    console.log(site.history.getList().map((it)=> it.vector));
+    console.log(operation.vector);
+    const independentOperationIndex = site.history.indexOfFirstIndependentOperation(operation.vector);
+    console.log('index of first independent operation', independentOperationIndex);
     if(independentOperationIndex === -1){
       console.log('no independent');
       // no independent operations in HB mean that we should not do any additional transformations
@@ -17,9 +20,9 @@ export class OperationTransformStrategy {
     }
 
     const operationsAfterFirstIndependent = site.history.slice(independentOperationIndex);
-    const allAfterIndependentAreIndependent = operationsAfterFirstIndependent.allOperationsIndependentOf(operation.vector, operation.siteId);
+    const allAfterIndependentAreIndependent = operationsAfterFirstIndependent.allOperationsIndependentOf(operation.vector);
 
-    console.log('allAfterIndependentAreIndependent');
+    console.log('allAfterIndependentAreIndependent', allAfterIndependentAreIndependent);
 
     if(allAfterIndependentAreIndependent){
       return operation.includeAll(operationsAfterFirstIndependent.getList());
@@ -34,8 +37,10 @@ export class OperationTransformStrategy {
     mixedOperationsList: OperationsList,
   ){
     const listOfDependentOperations = mixedOperationsList.getDependent(operation);
+    console.log('dependent', listOfDependentOperations[0]);
     const operations = mixedOperationsList.getListCopy();
     const originalOperations: TimestampedOperation[] = [];
+
     while (listOfDependentOperations.length > 0){
       const operation = listOfDependentOperations.shift();
       const excludedOperation = operation.excludeAll(
@@ -44,6 +49,9 @@ export class OperationTransformStrategy {
       const includedOgOperation = excludedOperation.includeAll(originalOperations);
       originalOperations.push(includedOgOperation);
     }
+
+    console.log('original operations', originalOperations[0]);
+    console.log(mixedOperationsList.getList().map((it)=> it.operation))
     return operation.excludeAll(originalOperations).includeAll(mixedOperationsList.getList());
   }
 }

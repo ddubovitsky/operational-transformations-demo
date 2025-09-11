@@ -21,7 +21,7 @@ describe('Site', () => {
       const site1 = new Site(TestSites.Site1);
       const operation = new InsertOperation(1, 'abs');
       site1.addLocalOperation(operation);
-      assert.deepEqual(site1.history, [operation.timestamp(StateVector.create(), TestSites.Site1)]);
+      assert.deepEqual(site1.history.getList(), [operation.timestamp(StateVector.create({[TestSites.Site1]: 1}), TestSites.Site1)]);
     });
 
     it('should increase state vector after performed local operation', () => {
@@ -46,10 +46,10 @@ describe('Site', () => {
 
       site2.addRemoteOperation(addedOperation);
 
-      assert.deepEqual(site2.history, [addedOperation]);
+      assert.deepEqual(site2.history.getList(), [addedOperation]);
     });
 
-    it('should immediately perform if context are equivalent and have 1 operation', () => {
+    it('should immediately perform if context are consequential and have 1 operation', () => {
       const site1 = new Site(TestSites.Site1);
       const site2 = new Site(TestSites.Site2);
 
@@ -64,7 +64,8 @@ describe('Site', () => {
         site2.addRemoteOperation(site1GeneratedOperation);
       });
 
-      assert.deepEqual(site2.history, site1GeneratedOperations);
+      console.log(site2.history.getList())
+      assert.deepEqual(site2.history.getList(), site1GeneratedOperations);
     });
   });
 
@@ -82,11 +83,11 @@ describe('Site', () => {
     // take all operations except first
     site1GeneratedOperations.slice(1).forEach((operation) => {
       site2.addRemoteOperation(operation);
-      assert.deepEqual(site2.history, [], 'Operations should remain empty until 1 operations is received');
+      assert.deepEqual(site2.history.getList(), [], 'Operations should remain empty until 1 operations is received');
     });
 
     site2.addRemoteOperation(site1GeneratedOperations[0]);
-    assert.deepEqual(site2.history, site1GeneratedOperations, 'After 1st operation received, all pending should be executed too');
+    assert.deepEqual(site2.history.getList(), site1GeneratedOperations, 'After 1st operation received, all pending should be executed too');
   });
 
   it('should not immediately perform if site misses operations from other sites', () => {
@@ -102,13 +103,13 @@ describe('Site', () => {
     const site1DependantOperation = site1.addLocalOperation(new InsertOperation(1, 'Korova'));
 
     site2.addRemoteOperation(site1GeneratedOperation);
-    assert.deepEqual(site2.history, [site1GeneratedOperation], 'Site2 adds first operations since context are equivalent');
+    assert.deepEqual(site2.history.getList(), [site1GeneratedOperation], 'Site2 adds first operations since context are equivalent');
 
     site2.addRemoteOperation(site1DependantOperation);
-    assert.deepEqual(site2.history, [site1GeneratedOperation], 'Site2 does not add second operation, since it depends on the site3 operation to be present too' + `${site2.history.length} should be 1`);
+    assert.deepEqual(site2.history.getList(), [site1GeneratedOperation], 'Site2 does not add second operation, since it depends on the site3 operation to be present too' + `${site2.history.getList().length} should be 1`);
     site2.addRemoteOperation(site3GeneratedOperation);
 
-    assert.deepEqual(site2.history, [site1GeneratedOperation, site3GeneratedOperation, site1DependantOperation], 'After Site3 receives third operation, dependant operation is ready and they both should be added to the history list');
+    assert.deepEqual(site2.history.getList(), [site1GeneratedOperation, site3GeneratedOperation, site1DependantOperation], 'After Site3 receives third operation, dependant operation is ready and they both should be added to the history list');
   });
 
 });

@@ -6,7 +6,7 @@ export class CanExecuteOperationStrategy {
     operationStateVector: StateVector,
     siteId: number,
   ): boolean {
-    const precondition1 = this.siteContextIsEqualToOperationContext(
+    const precondition1 = this.siteContextIsPrecedingOperationContext(
       currentState,
       operationStateVector,
       siteId,
@@ -21,12 +21,12 @@ export class CanExecuteOperationStrategy {
     return precondition1 && precondition2;
   }
 
-  private siteContextIsEqualToOperationContext(
+  private siteContextIsPrecedingOperationContext(
     currentState: StateVector,
     operationStateVector: StateVector,
     targetSiteId: number,
   ): boolean {
-    return currentState.isEqualForSite(operationStateVector, targetSiteId);
+    return currentState.isPrecedingForSite(operationStateVector, targetSiteId);
   }
 
   private hasAllKnownOperationsForOtherSites(

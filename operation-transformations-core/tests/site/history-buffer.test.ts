@@ -47,7 +47,7 @@ describe('HistoryBuffer', (t) => {
     );
 
 
-    assert.ok(historyBuffer.hasParallelOperationsToVector(StateVector.create({
+    assert.ok(!historyBuffer.hasParallelOperationsToVector(StateVector.create({
       [TestSites.Site1]: 2,
     }), TestSites.Site1));
 

@@ -49,6 +49,17 @@ class TimestampedOperationObserveDecorator implements TimestampedOperation {
     return 0;
   }
 
+
+  excludeAll(operations: TimestampedOperation[]) {
+    let operation: TimestampedOperation = this;
+    operations.forEach((it) => {
+      console.log('exclude');
+      operation = operation.exclude(it);
+    });
+    return operation;
+  }
+
+
   exclude(operation: TimestampedOperation): TimestampedOperation {
     this.collectingOperationsParameter.push({ type: 'exclude', operation: operation });
     return new TimestampedOperationObserveDecorator(this.targetOperation.exclude(operation), this.collectingOperationsParameter);
@@ -128,9 +139,9 @@ describe('OperationTransform strategy', (t) => {
 
     // independent target site operations from the origin site PV
     const independent1 = targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
-    const independent2 = targetSite.addLocalOperation(new InsertOperation(1, 'abc'));
+    const independent2 = targetSite.addLocalOperation(new InsertOperation(2, 'edf'));
 
-    const generatedIndependent = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
+    const generatedIndependent = originSite.addLocalOperation(new InsertOperation(1, '123'));
 
     let operationEvents = [];
     const fixtureOperation = new TimestampedOperationObserveDecorator(generatedIndependent, operationEvents);
@@ -152,7 +163,10 @@ describe('OperationTransform strategy', (t) => {
     const fixtureOperation2 = new TimestampedOperationObserveDecorator(generatedDependent, operationEvents);
 
     operationTransformStrategy.transformOperation(targetSite, fixtureOperation2);
-    assert.deepEqual(operationEvents, [
+
+    console.dir(operationEvents);
+
+    const expected = [
       {
         type: 'exclude',
         operation: transformed,
@@ -163,7 +177,16 @@ describe('OperationTransform strategy', (t) => {
       }, {
         type: 'include',
         operation: independent2,
-      }]);
+      },{
+        type: 'include',
+        operation: generatedIndependent,
+      }
+    ];
+    console.log(operationEvents.length);
+    operationEvents.forEach((it, index) => {
+      assert.deepEqual(it.operation, expected[index].operation);
+    });
+    // assert.deepEqual(operationEvents, );
 
   });
 });

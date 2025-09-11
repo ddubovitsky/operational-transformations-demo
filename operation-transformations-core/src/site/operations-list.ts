@@ -21,16 +21,16 @@ export class OperationsList {
     this.history.push(operation);
   }
 
-  hasParallelOperationsToVector(stateVector: StateVector, originSiteId: number) {
-    return this.history.some((it) => it.vector.isIndependentOf(stateVector, originSiteId));
+  hasParallelOperationsToVector(stateVector: StateVector) {
+    return this.history.some((it) => it.vector.isIndependentOf(stateVector));
   }
 
-  indexOfFirstIndependentOperation(stateVector: StateVector, originSiteId: number) {
-    return this.history.findIndex((it) => it.vector.isIndependentOf(stateVector, originSiteId));
+  indexOfFirstIndependentOperation(stateVector: StateVector) {
+    return this.history.findIndex((it) => it.vector.isIndependentOf(stateVector));
   }
 
-  allOperationsIndependentOf(stateVector: StateVector, originSiteId: number){
-    return this.history.every((it) => it.vector.isIndependentOf(stateVector, originSiteId));
+  allOperationsIndependentOf(stateVector: StateVector){
+    return this.history.every((it) => it.vector.isIndependentOf(stateVector));
   }
 
   slice(indexStart: number, indexEnd?: number): OperationsList {
