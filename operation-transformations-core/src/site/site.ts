@@ -15,7 +15,7 @@ export class Site {
   stateVector = StateVector.create();
 
 
-  addLocalOperation(operation1: Operation) {
+  addLocalOperation(operation1: Operation): TimestampedOperation {
     this.stateVector = this.stateVector.increment(this.siteId);
     const operation = operation1.timestamp(this.stateVector, this.siteId);
     this.history.add(operation);
