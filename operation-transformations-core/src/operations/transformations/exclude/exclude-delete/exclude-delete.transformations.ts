@@ -15,7 +15,6 @@ export function excludeDeleteFromDelete(target: DeleteOperation, operation: Dele
     return new DeleteOperation(target.getPositionStart(), target.getAmount());
   }
 
-  console.log('gibberish');
 }
 
 

@@ -31,7 +31,6 @@ class TimestampedOperationObserveDecorator implements TimestampedOperation {
   includeAll(operations: TimestampedOperation[]) {
     let operation: TimestampedOperation = this;
     operations.forEach((it) => {
-      console.log('include');
       operation = operation.include(it);
     });
     return operation;
@@ -53,7 +52,6 @@ class TimestampedOperationObserveDecorator implements TimestampedOperation {
   excludeAll(operations: TimestampedOperation[]) {
     let operation: TimestampedOperation = this;
     operations.forEach((it) => {
-      console.log('exclude');
       operation = operation.exclude(it);
     });
     return operation;
@@ -102,6 +100,11 @@ describe('OperationTransform strategy', (t) => {
     const originSite = new Site(TestSites.Site1);
     const targetSite = new Site(TestSites.Site2);
 
+    const operations = `
+    Site1: ---1----
+    Site2: ---2
+    `;
+
     // create some dependant operations
     const generatedOperation = originSite.addLocalOperation(new InsertOperation(1, 'abc'));
     targetSite.addRemoteOperation(generatedOperation);
@@ -147,7 +150,9 @@ describe('OperationTransform strategy', (t) => {
     const fixtureOperation = new TimestampedOperationObserveDecorator(generatedIndependent, operationEvents);
 
     const transformed = operationTransformStrategy.transformOperation(targetSite, fixtureOperation);
+
     targetSite.addRemoteOperation(transformed);
+
     assert.deepEqual(operationEvents, [{
       type: 'include',
       operation: independent1,
@@ -164,8 +169,6 @@ describe('OperationTransform strategy', (t) => {
 
     operationTransformStrategy.transformOperation(targetSite, fixtureOperation2);
 
-    console.dir(operationEvents);
-
     const expected = [
       {
         type: 'exclude',
@@ -177,16 +180,12 @@ describe('OperationTransform strategy', (t) => {
       }, {
         type: 'include',
         operation: independent2,
-      },{
+      }, {
         type: 'include',
-        operation: generatedIndependent,
-      }
+        operation: fixtureOperation,
+      },
     ];
-    console.log(operationEvents.length);
-    operationEvents.forEach((it, index) => {
-      assert.deepEqual(it.operation, expected[index].operation);
-    });
-    // assert.deepEqual(operationEvents, );
 
+    assert.deepEqual(operationEvents, expected);
   });
 });

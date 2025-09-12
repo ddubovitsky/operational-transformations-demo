@@ -64,7 +64,6 @@ describe('Site', () => {
         site2.addRemoteOperation(site1GeneratedOperation);
       });
 
-      console.log(site2.history.getList())
       assert.deepEqual(site2.history.getList(), site1GeneratedOperations);
     });
   });
