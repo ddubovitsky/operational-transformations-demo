@@ -52,10 +52,9 @@ describe('Operations player', () => {
   });
 
   it('should play local site operations', () => {
-    const operations = new OperationsParser().parseString(`S1:1-2-3`);
     const localOperationsRecord = [];
     player.playOperations(
-      operations,
+      `S1:1-2-3`,
       (siteId, operationId) => {
         localOperationsRecord.push({ siteId, operationId });
         return {
@@ -75,13 +74,12 @@ describe('Operations player', () => {
     ]);
   });
   it('should play remote site operations', () => {
-    const operations = new OperationsParser().parseString(`
-    S1:-----
-    S2:1-2-3
-    `);
     const remoteOperationsRecord = [];
     player.playOperations(
-      operations,
+      `
+      S1:-----
+      S2:1-2-3
+    `,
       (siteId, operationId) => {
         return {
           type: 'remote',
@@ -105,13 +103,12 @@ describe('Operations player', () => {
   });
 
   it('should skip operations until site is online', () => {
-    const operations = new OperationsParser().parseString(`
-    S1:x--o-
-    S2:1-2-3
-    `);
     const remoteOperationsRecord = [];
     player.playOperations(
-      operations,
+      `
+    S1:x--o-
+    S2:1-2-3
+    `,
       (siteId, operationId) => {
         return {
           type: 'remote',

@@ -114,10 +114,11 @@ export enum SiteState {
 
 export class OperationsPlayer {
   playOperations(
-    operations: Map<SiteToken, Token[]>,
+    operationsPlayback: string,
     playLocalOperation: (siteId: string, operationId: string) => any,
     playRemoteOperation: (siteId: string, operation: any) => void,
   ) {
+    const operations = new OperationsParser().parseString(operationsPlayback);
     const maxOperationsLength = Math.max(...Array.from(operations.values()).map((it) => it.length));
 
     const sites = Array.from(operations.keys());
