@@ -30,7 +30,7 @@ describe('HistoryBuffer', (t) => {
 
     assert.ok(historyBuffer.hasParallelOperationsToVector(StateVector.create({
       [TestSites.Site1]: 1,
-    }), TestSites.Site1));
+    })));
   });
 
   it('should return false if independent operation does not exist', () => {
@@ -49,7 +49,7 @@ describe('HistoryBuffer', (t) => {
 
     assert.ok(!historyBuffer.hasParallelOperationsToVector(StateVector.create({
       [TestSites.Site1]: 2,
-    }), TestSites.Site1));
+    })));
 
   });
 });
