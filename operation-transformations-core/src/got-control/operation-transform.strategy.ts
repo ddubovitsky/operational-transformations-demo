@@ -9,7 +9,7 @@ export class OperationTransformStrategy {
     }
 
     const independentOperationIndex = site.history.indexOfFirstIndependentOperation(operation.vector);
-    if(independentOperationIndex === -1){
+    if (independentOperationIndex === -1) {
       // no independent operations in HB mean that we should not do any additional transformations
       return operation;
     }
@@ -17,7 +17,7 @@ export class OperationTransformStrategy {
     const operationsAfterFirstIndependent = site.history.slice(independentOperationIndex);
     const allAfterIndependentAreIndependent = operationsAfterFirstIndependent.allOperationsIndependentOf(operation.vector);
 
-    if(allAfterIndependentAreIndependent){
+    if (allAfterIndependentAreIndependent) {
       return operation.includeAll(operationsAfterFirstIndependent.getList());
     }
 
@@ -27,21 +27,27 @@ export class OperationTransformStrategy {
   private transformOperationIncludingDependantOperations(
     operation: TimestampedOperation,
     mixedOperationsList: OperationsList,
-  ){
+  ) {
     const listOfDependentOperations = mixedOperationsList.getDependent(operation);
 
-    const operations = mixedOperationsList.getListCopy();
-    const originalOperations: TimestampedOperation[] = [];
+    const originalIncludedOperations = this.restoreOriginalIncludedOperations(listOfDependentOperations, mixedOperationsList.getListCopy());
 
-    while (listOfDependentOperations.length > 0){
-      const operation = listOfDependentOperations.shift();
-      const excludedOperation = operation.excludeAll(
-        operations.slice(0, operations.indexOf(operation))
+    return operation.excludeAll(originalIncludedOperations.reverse()).includeAll(mixedOperationsList.getList());
+  }
+
+  public restoreOriginalIncludedOperations(
+    listOfDependentOperations: TimestampedOperation[],
+    listOfOperations: TimestampedOperation[],
+  ) {
+    const originalOperations: TimestampedOperation[] = [];
+    while (listOfDependentOperations.length > 0) {
+      const dependentOperation = listOfDependentOperations.shift();
+      const excludedOperation = dependentOperation.excludeAll(
+        listOfOperations.slice(0, listOfOperations.indexOf(dependentOperation)).reverse(),
       );
       const includedOgOperation = excludedOperation.includeAll(originalOperations);
       originalOperations.push(includedOgOperation);
     }
-
-    return operation.excludeAll(originalOperations).includeAll(mixedOperationsList.getList());
+    return originalOperations;
   }
 }
