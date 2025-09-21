@@ -16,3 +16,19 @@ export function checkLi(transformOperation: Operation, resultingOperation: Opera
 export function recoverLi(transformOperation: Operation, resultingOperation: Operation) {
   return savedOps.get(resultingOperation, transformOperation);
 }
+
+
+const savedRelativeAddressing = new Map();
+
+
+export function saveRa(resultingOperation: Operation, transformOperation: Operation) {
+  savedRelativeAddressing.set(resultingOperation, transformOperation);
+}
+//
+// export function checkLi(transformOperation: Operation, resultingOperation: Operation) {
+//   return savedOps.has(resultingOperation, transformOperation);
+// }
+//
+// export function recoverLi(transformOperation: Operation, resultingOperation: Operation) {
+//   return savedOps.get(resultingOperation, transformOperation);
+// }

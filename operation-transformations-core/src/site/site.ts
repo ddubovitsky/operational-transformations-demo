@@ -3,6 +3,7 @@ import { TimestampedOperation } from '../operations/timestamped-operation.ts';
 import { Operation } from '../operations/operation.interface.ts';
 import { OperationsBufferedFilter } from './operations-buffered-filter.ts';
 import { OperationsList } from './operations-list.ts';
+import { OperationTransformStrategy } from '../got-control/operation-transform.strategy.ts';
 
 export class Site {
   private operationsBufferedFilter =  new OperationsBufferedFilter();
@@ -13,7 +14,7 @@ export class Site {
   history = new OperationsList();
 
   stateVector = StateVector.create();
-
+  transformStrategy = new OperationTransformStrategy();
 
   addLocalOperation(operation1: Operation): TimestampedOperation {
     this.stateVector = this.stateVector.increment(this.siteId);
@@ -27,7 +28,10 @@ export class Site {
     this.operationsBufferedFilter.addAndExecutePending(
       addedOperation,
       this.stateVector,
-      (operation) => this.executeOperation(operation),
+      (operation) => {
+        const transformed = this.transformStrategy.transformOperation(this, operation);
+        return this.executeOperation(transformed);
+      },
     );
   }
 

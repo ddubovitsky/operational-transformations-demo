@@ -1,12 +1,11 @@
 import {
-  getOperationStartEnd,
-  intersectDeleteInsertOperations,
+  getOperationStartEnd, intersectDeleteInsertOperations,
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
 } from './utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
-import { saveLi } from './utils/operations-utilities.ts';
+import { checkLi, recoverLi, saveLi } from './utils/operations-utilities.ts';
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
@@ -48,58 +47,108 @@ export class InsertOperation implements Operation {
     return input.substring(0, this.position) + this.insertString + input.substring(this.position, input.length);
   }
 
-  exclude(operation: Operation) {
-    let overlapType = intersectOperations(this, operation);
+
+  include(operation: Operation, originalSiteId?: number, operationSiteId?: number) {
+    if (operation instanceof InsertOperation) {
+      return this.includeInsertInsert(operation, originalSiteId, operationSiteId);
+    }
 
     if (operation instanceof DeleteOperation) {
-      overlapType = intersectDeleteInsertOperations(operation, this);
-    }
-    const operationStartEnd = getOperationStartEnd(operation);
-
-    switch (overlapType) {
-      case IntersectionType.OnTheLeft:
-        return new InsertOperation(this.position - operationStartEnd.lengthDiff, this.getInsertString());
-      case IntersectionType.OnTheRight:
-        return new InsertOperation(this.position, this.getInsertString());
-      case IntersectionType.Overlap:
-        throw 'Insert Exclude overlap is not handled :(';
+      return this.includeInsertDelete(operation);
     }
   }
 
-  include(operation: Operation) {
-    let overlapType = intersectOperations(this, operation);
+  exclude(operation: Operation, originalSiteId?: number, operationSiteId?: number) {
 
     if (operation instanceof InsertOperation) {
-      overlapType = intersectInsertOperations(this, operation);
+      return this.excludeInsertInsert(operation, originalSiteId, operationSiteId);
     }
+
+    if (operation instanceof DeleteOperation) {
+      return this.excludeInsertDelete(operation);
+    }
+  }
+
+  private moveRightBy(amount: number) {
+    return new InsertOperation(this.position + amount, this.insertString);
+  }
+
+  private includeInsertInsert(operation: InsertOperation, originalSiteId?: number, operationSiteId?: number) {
+    const operationStartEnd = getOperationStartEnd(operation);
+    const overlapType = intersectInsertOperations(this, operation);
+
+    if (overlapType === IntersectionType.OnTheLeft) {
+      return this.moveRightBy(operationStartEnd.lengthDiff);
+    }
+
+    if (overlapType === IntersectionType.OnTheRight) {
+      return this.moveRightBy(0);
+    }
+
+    if (originalSiteId < operationSiteId) {
+      return this.moveRightBy(0);
+    } else {
+      return this.moveRightBy(operationStartEnd.lengthDiff);
+    }
+  }
+
+  private excludeInsertInsert(operation: InsertOperation, originalSiteId?: number, operationSiteId?: number) {
+    const operationStartEnd = getOperationStartEnd(operation);
+    const overlapType = intersectInsertOperations(this, operation);
+
+    if (overlapType === IntersectionType.OnTheLeft) {
+      return this.moveRightBy(-operationStartEnd.lengthDiff);
+    }
+
+    if (overlapType === IntersectionType.OnTheRight) {
+      return this.moveRightBy(0);
+    }
+
+    if (originalSiteId < operationSiteId) {
+      return this.moveRightBy(0);
+    } else {
+      return this.moveRightBy(-operationStartEnd.lengthDiff);
+    }
+  }
+
+
+
+  private includeInsertDelete(operation: DeleteOperation) {
+    let overlapType = intersectOperations(this, operation);
+    const operationStartEnd = getOperationStartEnd(operation);
+
+    if (overlapType === IntersectionType.OnTheLeft) {
+      return this.moveRightBy(operationStartEnd.lengthDiff);
+    }
+
+    if (overlapType === IntersectionType.OnTheRight) {
+      return this.moveRightBy(0);
+    }
+
+    const position = Math.min(operation.getPositionStart(), this.getPosition());
+    const result = new InsertOperation(position, this.getInsertString());
+    saveLi(this, operation, result);
+    return result;
+  }
+
+  private excludeInsertDelete(operation: DeleteOperation) {
+    if (checkLi(operation, this)) {
+      return recoverLi(operation, this);
+    }
+
+    let overlapType = intersectDeleteInsertOperations(operation, this);
 
     const operationStartEnd = getOperationStartEnd(operation);
 
-    switch (overlapType) {
-      case IntersectionType.OnTheLeft:
-        return new InsertOperation(this.getPosition() + operationStartEnd.lengthDiff, this.getInsertString());
-      case IntersectionType.OnTheRight:
-        return new InsertOperation(this.getPosition(), this.getInsertString());
-      case IntersectionType.Overlap:
-        if (operation instanceof InsertOperation) {
-          return new InsertOperation(this.getPosition(), this.getInsertString());
-        }
-
-        if (operation instanceof DeleteOperation) {
-          // we are now inserting in the middle of the string that was deleted;
-          const position = Math.min(operation.getPositionStart(), this.getPosition());
-          const result = new InsertOperation(position, this.getInsertString());
-          saveLi(this, operation, result);
-          return result;
-        }
-
-        if (operation instanceof InsertOperation) {
-          return new InsertOperation(operation.getPosition(), operation.getInsertString());
-        }
-
-        throw 'Unexpected operation type';
-        break;
+    if (overlapType === IntersectionType.OnTheLeft) {
+      return this.moveRightBy(-operationStartEnd.lengthDiff);
     }
+
+    if (overlapType === IntersectionType.OnTheRight) {
+      return this.moveRightBy(0);
+    }
+
+    throw 'Insert Exclude overlap is not handled :(';
   }
 
   toString() {

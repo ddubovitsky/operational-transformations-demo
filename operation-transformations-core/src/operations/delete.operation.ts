@@ -4,7 +4,7 @@ import {
   IntersectionType,
   intersectOperations,
 } from './utils/operations-intersections.util.ts';
-import { checkLi, recoverLi, saveLi } from './utils/operations-utilities.ts';
+import { checkLi, recoverLi, saveLi, saveRa } from './utils/operations-utilities.ts';
 import { JointDeleteOperation } from './joint-delete.operation.ts';
 import { InsertOperation } from './insert.operation.ts';
 import { Operation } from './operation.interface.ts';
@@ -28,11 +28,46 @@ export class DeleteOperation implements Operation {
     return this.positionStart;
   }
 
+
+  private moveRightBy(amount: number) {
+    return new DeleteOperation(this.positionStart + amount, this.amount);
+  }
+
   execute(input: string) {
     return input.substring(0, this.positionStart) + input.substring(this.positionStart + this.amount, input.length);
   }
 
+  private newAmount(newAmount: number) {
+    return new DeleteOperation(this.positionStart, newAmount);
+  }
+
+  includeDeleteInsert(operation: InsertOperation) {
+    let overlapType = intersectDeleteInsertOperations(this, operation);
+
+    const operationStartEnd = getOperationStartEnd(operation);
+
+    if (overlapType === IntersectionType.OnTheLeft) {
+      return this.moveRightBy(operationStartEnd.lengthDiff);
+    }
+    if (overlapType === IntersectionType.OnTheRight) {
+      return this.moveRightBy(0);
+    }
+
+    const firstDeleteRange = this.newAmount(operation.getPosition() - this.getPositionStart());
+    const secondDeleteRange = this
+      .moveRightBy(this.positionStart - firstDeleteRange.positionStart + firstDeleteRange.amount + operation.getInsertString().length)
+      .newAmount(this.getAmount() - firstDeleteRange.getAmount());
+
+    return new JointDeleteOperation(
+      firstDeleteRange,
+      secondDeleteRange,
+    );
+  }
+
   exclude(operation: Operation) {
+    if (operation instanceof InsertOperation) {
+      return this.excludeDeleteInsert(operation);
+    }
     if (checkLi(operation, this)) {
       return recoverLi(operation, this);
     }
@@ -50,7 +85,50 @@ export class DeleteOperation implements Operation {
     }
   }
 
-  include(operation: Operation): Operation {
+  excludeDeleteInsert(operation: InsertOperation) {
+    if (checkLi(operation, this)) {
+      return recoverLi(operation, this);
+    }
+    const overlapType = intersectOperations(this, operation);
+
+    const operationStartEnd = getOperationStartEnd(operation);
+
+    if (overlapType === IntersectionType.OnTheLeft) {
+      return this.moveRightBy(-operationStartEnd.lengthDiff);
+    }
+
+    if (overlapType === IntersectionType.OnTheRight) {
+      return this.moveRightBy(0);
+    }
+
+    const currentEnd = this.positionStart + this.amount;
+
+    if(this.positionStart < operationStartEnd.start && currentEnd < operationStartEnd.end){
+      const newStart = this.positionStart;
+      const currentEnd = this.positionStart + this.amount;
+      const insertionStart = operationStartEnd.start;
+      const insertionEnd = operationStartEnd.end;
+      const overlapStart = operationStartEnd.start - this.positionStart
+      const newAmount = overlapStart +
+    }
+
+
+    if(operationStartEnd.start < this.positionStart){
+
+    }
+
+    if(operationStartEnd.start === this.positionStart){
+
+    }
+
+    saveRa()
+  }
+
+  include(operation: Operation): DeleteOperation | JointDeleteOperation {
+    if (operation instanceof InsertOperation) {
+      return this.includeDeleteInsert(operation);
+    }
+
     let overlapType = intersectOperations(this, operation);
     if (operation instanceof InsertOperation) {
       overlapType = intersectDeleteInsertOperations(this, operation);

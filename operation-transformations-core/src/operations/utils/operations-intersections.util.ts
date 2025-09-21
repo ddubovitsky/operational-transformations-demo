@@ -27,11 +27,11 @@ export function intersectInsertOperations(operationA: Operation, operationB: Ope
   const operationARange = getOperationStartEnd(operationA);
   const operationBRange = getOperationStartEnd(operationB);
 
-  if (operationARange.start <= operationBRange.start) {
+  if (operationARange.start < operationBRange.start) {
     return IntersectionType.OnTheRight;
   }
 
-  if (operationARange.start >= operationBRange.start) {
+  if (operationARange.start > operationBRange.start) {
     return IntersectionType.OnTheLeft;
   }
 
