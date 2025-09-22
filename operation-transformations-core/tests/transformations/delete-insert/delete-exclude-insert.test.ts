@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 import { DeleteOperation } from '../../../src/operations/delete.operation.ts';
 import assert from 'node:assert';
-import { recoverRa } from '../../../src/operations/utils/operations-utilities.ts';
+import { getRa } from '../../../src/operations/utils/operations-utilities.ts';
 import { JointDeleteOperation } from '../../../src/operations/joint-delete.operation.ts';
 
 // TODO:
@@ -40,21 +40,21 @@ describe('Exclude insert from delete', (t) => {
     const operation = new InsertOperation(3, 'jkl');
     const target = new DeleteOperation(2, 3);
     assert.deepEqual(target.exclude(operation), new DeleteOperation(2, 1));
-    assert.deepEqual(recoverRa(target.exclude(operation)), operation);
+    assert.deepEqual(getRa(target.exclude(operation)), operation);
   });
 
   it('Exclude insert that is fully overlapped by the delete', () => {
     const operation = new InsertOperation(3, 'jkl');
     const target = new DeleteOperation(2, 5);
     assert.deepEqual(target.exclude(operation), new DeleteOperation(2, 2));
-    assert.deepEqual(recoverRa(target.exclude(operation)), operation);
+    assert.deepEqual(getRa(target.exclude(operation)), operation);
   });
 
   it('Exclude insert that is fully overlaps delete', () => {
     const operation = new InsertOperation(1, 'jkl');
     const target = new DeleteOperation(2, 1);
     assert.deepEqual(target.exclude(operation), new DeleteOperation(2, 0));
-    assert.deepEqual(recoverRa(target.exclude(operation)), operation);
+    assert.deepEqual(getRa(target.exclude(operation)), operation);
   });
 
 });

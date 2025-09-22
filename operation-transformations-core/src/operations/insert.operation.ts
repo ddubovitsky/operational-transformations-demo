@@ -6,7 +6,7 @@ import {
   intersectOperations,
 } from './utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
-import { checkLi, isDevMode, recoverLi, reportError, saveLi, saveRa } from './utils/operations-utilities.ts';
+import { checkLi, getRa, isDevMode, recoverLi, reportError, saveLi, saveRa } from './utils/operations-utilities.ts';
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
@@ -50,6 +50,10 @@ export class InsertOperation implements Operation {
 
 
   include(operation: Operation, originalSiteId?: number, operationSiteId?: number) {
+    if (getRa(this) === operation) {
+      return this.moveRightBy(getOperationStartEnd(operation).start);
+    }
+
     if (operation instanceof InsertOperation) {
       return this.includeInsertInsert(operation, originalSiteId, operationSiteId);
     }
@@ -104,8 +108,8 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(-operationStartEnd.lengthDiff);
     }
 
-    const result = new InsertOperation(operation.position, this.insertString);
-    saveRa(result, operation)
+    const result = new InsertOperation(this.position - operation.position, this.insertString);
+    saveRa(result, operation);
     return result;
   }
 
@@ -145,7 +149,7 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(0);
     }
 
-    if(isDevMode()){
+    if (isDevMode()) {
       throw 'Insert Exclude overlap is not handled :(';
     }
 

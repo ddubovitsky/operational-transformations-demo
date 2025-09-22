@@ -4,6 +4,7 @@ import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
 import { getOperationStartEnd } from './utils/operations-intersections.util.ts';
+import { saveLi } from './utils/operations-utilities.ts';
 
 export class JointDeleteOperation implements Operation {
   private readonly first: DeleteOperation;
@@ -37,9 +38,11 @@ export class JointDeleteOperation implements Operation {
 
 
     if (getOperationStartEnd(first).lengthDiff === 0) {
+      saveLi(this, deleteOperation, second)
       return second;
     }
     if (getOperationStartEnd(second).lengthDiff === 0) {
+      saveLi(this, deleteOperation, first)
       return first;
     }
 

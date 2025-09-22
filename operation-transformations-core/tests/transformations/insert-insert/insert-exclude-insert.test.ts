@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 import assert from 'node:assert';
-import { recoverRa } from '../../../src/operations/utils/operations-utilities.ts';
+import { getRa } from '../../../src/operations/utils/operations-utilities.ts';
 
 
 describe('Exclude insert from insert', (t) => {
@@ -39,6 +39,6 @@ describe('Exclude insert from insert', (t) => {
     const target = new InsertOperation(4, '123');
     const result = target.exclude(operation);
     assert.deepEqual(result, new InsertOperation(3, '123'));
-    assert.deepEqual(recoverRa(result), operation);
+    assert.deepEqual(getRa(result), operation);
   });
 });

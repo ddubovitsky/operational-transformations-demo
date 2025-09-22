@@ -26,10 +26,14 @@ export function saveRa(resultingOperation: Operation, transformOperation: Operat
 }
 
 //
-export function recoverRa(resultingOperation: Operation) {
+export function getRa(resultingOperation: Operation) {
   return savedRelativeAddressing.get(resultingOperation);
 }
 
+
+export function recoverRa(operation: Operation, baseOperation, resultingOperation: Operation) {
+  return savedRelativeAddressing.get(resultingOperation);
+}
 //
 // export function recoverLi(transformOperation: Operation, resultingOperation: Operation) {
 //   return savedOps.get(resultingOperation, transformOperation);

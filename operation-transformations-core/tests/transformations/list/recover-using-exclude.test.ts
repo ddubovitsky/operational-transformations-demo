@@ -5,7 +5,7 @@ import { listExcludeOperations, listIncludeOperations } from '../../../src/opera
 import assert from 'node:assert';
 import { JointDeleteOperation } from '../../../src/operations/joint-delete.operation.ts';
 
-describe('list operations include', () => {
+describe('Test recoverability of joint delete include delete', () => {
   describe('simple list include 1', () => {
     const operation = new DeleteOperation(2, 2);
 
@@ -33,10 +33,7 @@ describe('list operations include', () => {
 
     assert.deepEqual(result, new DeleteOperation(3, 1))
   });
-});
 
-
-describe('list operations exclude', () => {
   describe('simple list exclude 1', () => {
     const operation = new DeleteOperation(2, 2);
 
@@ -61,6 +58,63 @@ describe('list operations exclude', () => {
     const includedResult = listIncludeOperations(operation, operations);
 
     const excludedResult = listExcludeOperations(includedResult, operations.reverse());
-    assert.deepEqual(excludedResult, operation);
+    assert.deepEqual(excludedResult, new DeleteOperation(2, 2));
   });
 });
+
+
+describe('Test recoverability of overlapping delete include delete', () => {
+  describe('simple list include 1 delete', () => {
+    const operation = new DeleteOperation(2, 2);
+
+    const operations = [
+      new DeleteOperation(0, 3),
+    ];
+
+    const result = listIncludeOperations(operation, operations);
+
+    assert.deepEqual(result, new DeleteOperation(0, 1));
+  });
+
+  describe('simple list overlap exclude 1', () => {
+    const operation = new DeleteOperation(2, 2);
+
+    const operations = [
+      new DeleteOperation(0, 3),
+    ];
+
+    const includedResult = listIncludeOperations(operation, operations);
+
+    const excludedResult = listExcludeOperations(includedResult, operations.reverse());
+    assert.deepEqual(excludedResult, new DeleteOperation(2, 2))
+  });
+});
+
+
+describe('Test recoverability of insert + delete', () => {
+  describe('simple list include 1 delete', () => {
+    const operation = new InsertOperation(2, '123');
+
+    const operations = [
+      new DeleteOperation(0, 3),
+    ];
+
+    const result = listIncludeOperations(operation, operations);
+
+    assert.deepEqual(result, new InsertOperation(0, '123'));
+  });
+
+  describe('simple list overlap exclude 2', () => {
+    const operation = new InsertOperation(2, '123');
+
+    const operations = [
+      new DeleteOperation(0, 3),
+    ];
+
+    const includedResult = listIncludeOperations(operation, operations);
+
+    const excludedResult = listExcludeOperations(includedResult, operations.reverse());
+    assert.deepEqual(excludedResult, new InsertOperation(2, '123'))
+  });
+});
+
