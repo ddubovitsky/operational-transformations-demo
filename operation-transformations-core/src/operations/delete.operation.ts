@@ -93,7 +93,7 @@ export class DeleteOperation implements Operation {
     }
 
     if(operation instanceof DeleteOperation){
-     this.excludeDeleteDelete(operation);
+     return this.excludeDeleteDelete(operation);
     }
 
   }

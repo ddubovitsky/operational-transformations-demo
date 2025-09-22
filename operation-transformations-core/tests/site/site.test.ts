@@ -94,7 +94,7 @@ describe('Site', () => {
     const site2 = new Site(TestSites.Site2);
     const site3 = new Site(TestSites.Site3);
 
-    const site1GeneratedOperation = site1.addLocalOperation(new InsertOperation(1, '123'));
+    const site1GeneratedOperation = site1.addLocalOperation(new InsertOperation(1, 'let'));
     const site3GeneratedOperation = site3.addLocalOperation(new InsertOperation(1, '123'));
 
     site1.addRemoteOperation(site3GeneratedOperation);
@@ -108,7 +108,8 @@ describe('Site', () => {
     assert.deepEqual(site2.history.getList(), [site1GeneratedOperation], 'Site2 does not add second operation, since it depends on the site3 operation to be present too' + `${site2.history.getList().length} should be 1`);
     site2.addRemoteOperation(site3GeneratedOperation);
 
-    assert.deepEqual(site2.history.getList(), [site1GeneratedOperation, site3GeneratedOperation, site1DependantOperation], 'After Site3 receives third operation, dependant operation is ready and they both should be added to the history list');
+    const site3GeneratedOperationTransformed = site3GeneratedOperation.include(site1GeneratedOperation);
+    assert.deepEqual(site2.history.getList(), [site1GeneratedOperation, site3GeneratedOperationTransformed, site1DependantOperation]);
   });
 
 });

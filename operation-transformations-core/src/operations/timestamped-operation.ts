@@ -27,7 +27,7 @@ export class TimestampedOperation {
 
   include(operation: TimestampedOperation) {
     return new TimestampedOperation(
-      this.operation.include(operation.operation),
+      this.operation.include(operation.operation, this.siteId, operation.siteId),
       this.vector,
       this.siteId,
     );
@@ -43,7 +43,7 @@ export class TimestampedOperation {
 
   exclude(operation: TimestampedOperation) {
     return new TimestampedOperation(
-      this.operation.include(operation.operation),
+      this.operation.exclude(operation.operation),
       this.vector,
       this.siteId,
     );

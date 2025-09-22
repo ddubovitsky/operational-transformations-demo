@@ -181,6 +181,7 @@ describe('OperationTransform strategy', (t) => {
         sites[site].addRemoteOperation(operation);
       });
 
+
     const expected = [
       {
         type: 'exclude',
@@ -228,7 +229,7 @@ describe('OperationTransform strategy', (t) => {
     const expected = [
       {
         type: 'exclude',
-        operation: timestampedOperations['5'],
+        operation: timestampedOperations['5'].include(timestampedOperations['4']),
       },
       {
         type: 'exclude',
@@ -246,7 +247,7 @@ describe('OperationTransform strategy', (t) => {
       },
       {
         type: 'include',
-        operation: timestampedOperations['5'],
+        operation: timestampedOperations['5'].include(timestampedOperations['4']),
       }
     ];
 
