@@ -3,7 +3,7 @@ import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 import assert from 'node:assert';
 
 
-describe('Include insert in insert', (t) => {
+describe('Exclude insert from insert', (t) => {
   it('Include insert to the right', () => {
     const operation = new InsertOperation(4, 'jkl');
     const target = new InsertOperation(3, '123');

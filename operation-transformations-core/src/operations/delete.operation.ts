@@ -1,5 +1,5 @@
 import {
-  getOperationStartEnd,
+  getOperationStartEnd, intersectDeleteExcludeDeleteOperation,
   intersectDeleteInsertOperations,
   IntersectionType,
   intersectOperations,
@@ -64,6 +64,29 @@ export class DeleteOperation implements Operation {
     );
   }
 
+
+  includeDeleteDelete(operation: DeleteOperation) {
+    let overlapType = intersectOperations(this, operation);
+
+    const operationStartEnd = getOperationStartEnd(operation);
+
+    if (overlapType === IntersectionType.OnTheLeft) {
+      return this.moveRightBy(operationStartEnd.lengthDiff);
+    }
+
+    if (overlapType === IntersectionType.OnTheRight) {
+      return this.moveRightBy(0);
+    }
+
+    const position = Math.min(operation.getPositionStart(), this.getPositionStart());
+    const totalDeleteEnd = Math.max(operation.getAmount() + operation.getPositionStart(), this.getPositionStart() + this.getAmount());
+    const totalRange = totalDeleteEnd - position;
+    const amount = totalRange - operation.getAmount();
+    const result = new DeleteOperation(position, amount);
+    saveLi(this, operation, result);
+    return result;
+  }
+
   exclude(operation: Operation) {
     if (operation instanceof InsertOperation) {
       return this.excludeDeleteInsert(operation);
@@ -71,18 +94,29 @@ export class DeleteOperation implements Operation {
     if (checkLi(operation, this)) {
       return recoverLi(operation, this);
     }
-    const overlapType = intersectOperations(this, operation);
+    if(operation instanceof DeleteOperation){
+      const overlapType = intersectDeleteExcludeDeleteOperation(this, operation);
 
-    const operationStartEnd = getOperationStartEnd(operation);
+      const operationStartEnd = getOperationStartEnd(operation);
 
-    switch (overlapType) {
-      case IntersectionType.OnTheLeft:
-        return new DeleteOperation(this.getPositionStart() - operationStartEnd.lengthDiff, this.getAmount());
-      case IntersectionType.OnTheRight:
-        return new DeleteOperation(this.getPositionStart(), this.getAmount());
-      case IntersectionType.Overlap:
-        throw 'Exclude overlap is not handled :(';
+      switch (overlapType) {
+        case IntersectionType.OnTheLeft:
+          return new DeleteOperation(this.getPositionStart() - operationStartEnd.lengthDiff, this.getAmount());
+        case IntersectionType.OnTheRight:
+          return new DeleteOperation(this.getPositionStart(), this.getAmount());
+        case IntersectionType.Overlap:
+          const firstDeleteRange = this.newAmount(operation.getPositionStart() - this.getPositionStart());
+          const secondDeleteRange = this
+            .moveRightBy(this.positionStart - firstDeleteRange.positionStart + firstDeleteRange.amount + operation.getAmount())
+            .newAmount(this.getAmount() - firstDeleteRange.getAmount());
+
+          return new JointDeleteOperation(
+            firstDeleteRange,
+            secondDeleteRange,
+          );
+      }
     }
+
   }
 
   excludeDeleteInsert(operation: InsertOperation) {
@@ -103,25 +137,27 @@ export class DeleteOperation implements Operation {
 
     const currentEnd = this.positionStart + this.amount;
 
-    if(this.positionStart < operationStartEnd.start && currentEnd < operationStartEnd.end){
-      const newStart = this.positionStart;
-      const currentEnd = this.positionStart + this.amount;
+    let result: Operation;
+    if (this.positionStart < operationStartEnd.start && currentEnd < operationStartEnd.end) {
       const insertionStart = operationStartEnd.start;
-      const insertionEnd = operationStartEnd.end;
-      const overlapStart = operationStartEnd.start - this.positionStart
-      const newAmount = overlapStart +
+      const newAmount = insertionStart - this.positionStart;
+      result = new DeleteOperation(this.positionStart, newAmount);
     }
 
-
-    if(operationStartEnd.start < this.positionStart){
-
+    if (this.positionStart > operationStartEnd.start && currentEnd > operationStartEnd.end) {
+      result = new DeleteOperation(operationStartEnd.start, this.positionStart + this.amount - operationStartEnd.end);
     }
 
-    if(operationStartEnd.start === this.positionStart){
-
+    if (this.positionStart <= operationStartEnd.start && currentEnd >= operationStartEnd.end) {
+      result = new DeleteOperation(this.positionStart, this.amount - operationStartEnd.lengthDiff);
     }
 
-    saveRa()
+    if (this.positionStart > operationStartEnd.start && currentEnd < operationStartEnd.end) {
+      result = new DeleteOperation(this.positionStart, 0);
+    }
+
+    saveRa(result, operation);
+    return result;
   }
 
   include(operation: Operation): DeleteOperation | JointDeleteOperation {
@@ -129,49 +165,11 @@ export class DeleteOperation implements Operation {
       return this.includeDeleteInsert(operation);
     }
 
-    let overlapType = intersectOperations(this, operation);
-    if (operation instanceof InsertOperation) {
-      overlapType = intersectDeleteInsertOperations(this, operation);
+    if (operation instanceof DeleteOperation) {
+      return this.includeDeleteDelete(operation);
     }
 
-    const operationStartEnd = getOperationStartEnd(operation);
-
-    switch (overlapType) {
-      case IntersectionType.OnTheLeft:
-        return new DeleteOperation(this.getPositionStart() + operationStartEnd.lengthDiff, this.getAmount());
-      case IntersectionType.OnTheRight:
-        return new DeleteOperation(this.getPositionStart(), this.getAmount());
-      case IntersectionType.Overlap:
-
-
-        if (operation instanceof DeleteOperation) {
-          // if we are here it means that ranges overlap, in this case we need to substract operation range from target range
-          // "ABCDEFG", target delete range "AB[CDE]FG", operation range "ABCD[EFG]"
-          // OR target delete range "ABCD[EF]G", operation range "AB[CDE]FG", result should be AB[F]G
-          const position = Math.min(operation.getPositionStart(), this.getPositionStart());
-          const totalDeleteEnd = Math.max(operation.getAmount() + operation.getPositionStart(), this.getPositionStart() + this.getAmount());
-          const totalRange = totalDeleteEnd - position;
-          const amount = totalRange - operation.getAmount();
-          const result = new DeleteOperation(position, amount);
-          saveLi(this, operation, result);
-          return result;
-        }
-
-        if (operation instanceof InsertOperation) {
-          // if we are here it means that ranges overlap, in this case we need to substract operation range from target range
-          // "ABCDEFG", target delete range "AB[CDE]FG", insert range "ABCD[aaa]EFG"
-          // OR target delete range "AB[CDE]FG", operation range "ABC[aaa]DEFG", result should be AB[F]G
-          const firstDeleteRange = new DeleteOperation(this.getPositionStart(), operation.getPosition() - this.getPositionStart());
-          const secondDeleteRange = new DeleteOperation(operation.getPosition() + operation.getInsertString().length, this.getAmount() - firstDeleteRange.getAmount());
-
-          return new JointDeleteOperation(
-            firstDeleteRange,
-            secondDeleteRange,
-          );
-        }
-
-        throw 'unexpected operation';
-    }
+    throw 'Unexpected operation type ' + operation;
   }
 
   timestamp(vector: StateVector, siteId: number): TimestampedOperation {

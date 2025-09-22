@@ -25,9 +25,9 @@ export function saveRa(resultingOperation: Operation, transformOperation: Operat
   savedRelativeAddressing.set(resultingOperation, transformOperation);
 }
 //
-// export function checkLi(transformOperation: Operation, resultingOperation: Operation) {
-//   return savedOps.has(resultingOperation, transformOperation);
-// }
+export function checkRa(resultingOperation: Operation) {
+  return savedRelativeAddressing.get(resultingOperation);
+}
 //
 // export function recoverLi(transformOperation: Operation, resultingOperation: Operation) {
 //   return savedOps.get(resultingOperation, transformOperation);
