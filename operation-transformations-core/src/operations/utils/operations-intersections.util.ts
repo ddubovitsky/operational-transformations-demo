@@ -12,8 +12,8 @@ export enum IntersectionType {
 export function intersectOperations(operationA: Operation, operationB: Operation): IntersectionType {
   const operationARange = getOperationStartEnd(operationA);
   const operationBRange = getOperationStartEnd(operationB);
-  console.log(operationARange);
-  console.log(operationBRange);
+
+
   if (operationARange.end <= operationBRange.start) {
     return IntersectionType.OnTheRight;
   }

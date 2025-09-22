@@ -24,11 +24,22 @@ const savedRelativeAddressing = new Map();
 export function saveRa(resultingOperation: Operation, transformOperation: Operation) {
   savedRelativeAddressing.set(resultingOperation, transformOperation);
 }
+
 //
-export function checkRa(resultingOperation: Operation) {
+export function recoverRa(resultingOperation: Operation) {
   return savedRelativeAddressing.get(resultingOperation);
 }
+
 //
 // export function recoverLi(transformOperation: Operation, resultingOperation: Operation) {
 //   return savedOps.get(resultingOperation, transformOperation);
 // }
+
+export function isDevMode(): boolean {
+  return false;
+}
+
+
+export function reportError(error: string) {
+  console.error(error);
+}

@@ -91,32 +91,38 @@ export class DeleteOperation implements Operation {
     if (operation instanceof InsertOperation) {
       return this.excludeDeleteInsert(operation);
     }
+
+    if(operation instanceof DeleteOperation){
+     this.excludeDeleteDelete(operation);
+    }
+
+  }
+
+  excludeDeleteDelete(operation: DeleteOperation){
     if (checkLi(operation, this)) {
       return recoverLi(operation, this);
     }
-    if(operation instanceof DeleteOperation){
-      const overlapType = intersectDeleteExcludeDeleteOperation(this, operation);
 
-      const operationStartEnd = getOperationStartEnd(operation);
+    const overlapType = intersectDeleteExcludeDeleteOperation(this, operation);
 
-      switch (overlapType) {
-        case IntersectionType.OnTheLeft:
-          return new DeleteOperation(this.getPositionStart() - operationStartEnd.lengthDiff, this.getAmount());
-        case IntersectionType.OnTheRight:
-          return new DeleteOperation(this.getPositionStart(), this.getAmount());
-        case IntersectionType.Overlap:
-          const firstDeleteRange = this.newAmount(operation.getPositionStart() - this.getPositionStart());
-          const secondDeleteRange = this
-            .moveRightBy(this.positionStart - firstDeleteRange.positionStart + firstDeleteRange.amount + operation.getAmount())
-            .newAmount(this.getAmount() - firstDeleteRange.getAmount());
+    const operationStartEnd = getOperationStartEnd(operation);
 
-          return new JointDeleteOperation(
-            firstDeleteRange,
-            secondDeleteRange,
-          );
-      }
+    switch (overlapType) {
+      case IntersectionType.OnTheLeft:
+        return new DeleteOperation(this.getPositionStart() - operationStartEnd.lengthDiff, this.getAmount());
+      case IntersectionType.OnTheRight:
+        return new DeleteOperation(this.getPositionStart(), this.getAmount());
+      case IntersectionType.Overlap:
+        const firstDeleteRange = this.newAmount(operation.getPositionStart() - this.getPositionStart());
+        const secondDeleteRange = this
+          .moveRightBy(this.positionStart - firstDeleteRange.positionStart + firstDeleteRange.amount + operation.getAmount())
+          .newAmount(this.getAmount() - firstDeleteRange.getAmount());
+
+        return new JointDeleteOperation(
+          firstDeleteRange,
+          secondDeleteRange,
+        );
     }
-
   }
 
   excludeDeleteInsert(operation: InsertOperation) {

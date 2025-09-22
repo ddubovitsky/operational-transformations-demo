@@ -1,11 +1,12 @@
 import {
-  getOperationStartEnd, intersectDeleteInsertOperations,
+  getOperationStartEnd,
+  intersectDeleteInsertOperations,
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
 } from './utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
-import { checkLi, recoverLi, saveLi } from './utils/operations-utilities.ts';
+import { checkLi, isDevMode, recoverLi, reportError, saveLi, saveRa } from './utils/operations-utilities.ts';
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
@@ -58,10 +59,10 @@ export class InsertOperation implements Operation {
     }
   }
 
-  exclude(operation: Operation, originalSiteId?: number, operationSiteId?: number) {
+  exclude(operation: Operation) {
 
     if (operation instanceof InsertOperation) {
-      return this.excludeInsertInsert(operation, originalSiteId, operationSiteId);
+      return this.excludeInsertInsert(operation);
     }
 
     if (operation instanceof DeleteOperation) {
@@ -92,25 +93,21 @@ export class InsertOperation implements Operation {
     }
   }
 
-  private excludeInsertInsert(operation: InsertOperation, originalSiteId?: number, operationSiteId?: number) {
+  private excludeInsertInsert(operation: InsertOperation) {
     const operationStartEnd = getOperationStartEnd(operation);
-    const overlapType = intersectInsertOperations(this, operation);
 
-    if (overlapType === IntersectionType.OnTheLeft) {
-      return this.moveRightBy(-operationStartEnd.lengthDiff);
-    }
-
-    if (overlapType === IntersectionType.OnTheRight) {
+    if (this.position <= operation.position) {
       return this.moveRightBy(0);
     }
 
-    if (originalSiteId < operationSiteId) {
-      return this.moveRightBy(0);
-    } else {
+    if (operation.position <= this.position && operationStartEnd.end <= this.position) {
       return this.moveRightBy(-operationStartEnd.lengthDiff);
     }
+
+    const result = new InsertOperation(operation.position, this.insertString);
+    saveRa(result, operation)
+    return result;
   }
-
 
 
   private includeInsertDelete(operation: DeleteOperation) {
@@ -148,7 +145,12 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(0);
     }
 
-    throw 'Insert Exclude overlap is not handled :(';
+    if(isDevMode()){
+      throw 'Insert Exclude overlap is not handled :(';
+    }
+
+    reportError('Insert exclude overlap is not handled properly');
+    return this.moveRightBy(0);
   }
 
   toString() {

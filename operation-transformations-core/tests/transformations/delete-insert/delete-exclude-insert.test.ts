@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 import { DeleteOperation } from '../../../src/operations/delete.operation.ts';
 import assert from 'node:assert';
-import { checkRa } from '../../../src/operations/utils/operations-utilities.ts';
+import { recoverRa } from '../../../src/operations/utils/operations-utilities.ts';
 
 // TODO:
 // Secondly, in ET DI(Oa, Ob), when the deleting range of Oa covers some
@@ -39,22 +39,21 @@ describe('Exclude insert from delete', (t) => {
     const operation = new InsertOperation(3, 'jkl');
     const target = new DeleteOperation(2, 3);
     assert.deepEqual(target.exclude(operation), new DeleteOperation(2, 1));
-    assert.deepEqual(checkRa(target.exclude(operation)), operation);
+    assert.deepEqual(recoverRa(target.exclude(operation)), operation);
   });
 
   it('Exclude insert that is fully overlapped by the delete', () => {
     const operation = new InsertOperation(3, 'jkl');
     const target = new DeleteOperation(2, 5);
     assert.deepEqual(target.exclude(operation), new DeleteOperation(2, 2));
-    assert.deepEqual(checkRa(target.exclude(operation)), operation);
+    assert.deepEqual(recoverRa(target.exclude(operation)), operation);
   });
 
   it('Exclude insert that is fully overlaps delete', () => {
     const operation = new InsertOperation(1, 'jkl');
     const target = new DeleteOperation(2, 1);
     assert.deepEqual(target.exclude(operation), new DeleteOperation(2, 0));
-    assert.deepEqual(checkRa(target.exclude(operation)), operation);
-
+    assert.deepEqual(recoverRa(target.exclude(operation)), operation);
   });
 
 });
