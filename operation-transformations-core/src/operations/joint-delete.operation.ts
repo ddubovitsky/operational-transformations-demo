@@ -3,6 +3,7 @@ import { InsertOperation } from './insert.operation.ts';
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
+import { getOperationStartEnd } from './utils/operations-intersections.util.ts';
 
 export class JointDeleteOperation implements Operation {
   private readonly first: DeleteOperation;
@@ -29,8 +30,28 @@ export class JointDeleteOperation implements Operation {
     return resultString;
   }
 
+
+  includeDeleteOperation(deleteOperation: DeleteOperation) {
+    const first = this.first.include(deleteOperation);
+    const second = this.second.include(deleteOperation);
+
+
+    if (getOperationStartEnd(first).lengthDiff === 0) {
+      return second;
+    }
+    if (getOperationStartEnd(second).lengthDiff === 0) {
+      return first;
+    }
+
+    return new JointDeleteOperation(
+      first as any, second as any,
+    );
+  }
+
   include(operation: Operation): Operation {
-    throw 'Joint operation should not include operations';
+    if (operation instanceof DeleteOperation) {
+      return this.includeDeleteOperation(operation);
+    }
   }
 
   exclude(operation: Operation) {

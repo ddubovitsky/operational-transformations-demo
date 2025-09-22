@@ -3,6 +3,7 @@ import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 import { DeleteOperation } from '../../../src/operations/delete.operation.ts';
 import assert from 'node:assert';
 import { recoverRa } from '../../../src/operations/utils/operations-utilities.ts';
+import { JointDeleteOperation } from '../../../src/operations/joint-delete.operation.ts';
 
 // TODO:
 // Secondly, in ET DI(Oa, Ob), when the deleting range of Oa covers some

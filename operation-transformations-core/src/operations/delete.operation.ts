@@ -29,7 +29,7 @@ export class DeleteOperation implements Operation {
   }
 
 
-  private moveRightBy(amount: number) {
+  public moveRightBy(amount: number) {
     return new DeleteOperation(this.positionStart + amount, this.amount);
   }
 
