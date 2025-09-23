@@ -81,6 +81,8 @@ export class JointDeleteOperation implements Operation {
     if (newFirst.getPositionStart() + newFirst.getAmount() === newSecond.getPositionStart()) {
       return new DeleteOperation(newFirst.getPositionStart(), newFirst.getAmount() + newSecond.getAmount());
     }
+
+    console.log('wtf jointed');
   }
 
   clone(): Operation {

@@ -17,7 +17,7 @@ describe('Exclude delete from delete', (t) => {
     const operation = new DeleteOperation(0, 2);
     const target = new DeleteOperation(2, 2);
     const includedTarget = target.include(operation);
-    console.log(includedTarget);
+
     const excludedTarget = includedTarget.exclude(operation);
     assert.deepEqual(excludedTarget, new DeleteOperation(2, 2));
   });

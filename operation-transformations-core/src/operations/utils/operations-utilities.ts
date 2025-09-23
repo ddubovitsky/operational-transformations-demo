@@ -40,7 +40,7 @@ export function recoverRa(operation: Operation, baseOperation, resultingOperatio
 // }
 
 export function isDevMode(): boolean {
-  return false;
+  return true;
 }
 
 

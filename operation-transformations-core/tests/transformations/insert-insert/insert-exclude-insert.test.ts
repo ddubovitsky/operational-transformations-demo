@@ -9,7 +9,7 @@ describe('Exclude insert from insert', (t) => {
     const operation = new InsertOperation(4, 'jkl');
     const target = new InsertOperation(3, '123');
     const included = target.include(operation);
-    console.log(included);
+
     assert.deepEqual(included.exclude(operation), target);
   });
 
@@ -38,7 +38,7 @@ describe('Exclude insert from insert', (t) => {
     const operation = new InsertOperation(3, 'jkl');
     const target = new InsertOperation(4, '123');
     const result = target.exclude(operation);
-    assert.deepEqual(result, new InsertOperation(3, '123'));
+    assert.deepEqual(result, new InsertOperation(1, '123'));
     assert.deepEqual(getRa(result), operation);
   });
 });

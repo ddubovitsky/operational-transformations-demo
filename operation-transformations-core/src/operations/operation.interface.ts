@@ -6,8 +6,10 @@ export interface Operation {
 
   exclude(operation: Operation): Operation;
 
-  timestamp(vector: StateVector, siteId: number): TimestampedOperation
+  timestamp(vector: StateVector, siteId: number): TimestampedOperation;
 
   clone(): Operation;
+
+  execute(string: string): string;
 }
 

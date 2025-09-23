@@ -1,9 +1,14 @@
 import { Site } from '../site/site.ts';
 import { TimestampedOperation } from '../operations/timestamped-operation.ts';
 import { OperationsList } from '../site/operations-list.ts';
+import { InsertOperation } from '../operations/insert.operation.ts';
+
+let shouldLog = false;
 
 export class OperationTransformStrategy {
   transformOperation(site: Site, operation: TimestampedOperation) {
+    shouldLog = operation.operation instanceof InsertOperation && operation.operation.getInsertString() === 'ochen ';
+
     if (site.stateVector.isContextuallyEqual(operation.vector)) {
       return operation;
     }
@@ -31,7 +36,6 @@ export class OperationTransformStrategy {
     const listOfDependentOperations = mixedOperationsList.getDependent(operation);
 
     const originalIncludedOperations = this.restoreOriginalIncludedOperations(listOfDependentOperations, mixedOperationsList.getListCopy());
-
     return operation.excludeAll(originalIncludedOperations.reverse()).includeAll(mixedOperationsList.getList());
   }
 
@@ -39,6 +43,10 @@ export class OperationTransformStrategy {
     listOfDependentOperations: TimestampedOperation[],
     listOfOperations: TimestampedOperation[],
   ) {
+    if (shouldLog) {
+      console.log('dependant', listOfOperations.map((it) => it.operation));
+    }
+
     const originalOperations: TimestampedOperation[] = [];
     while (listOfDependentOperations.length > 0) {
       const dependentOperation = listOfDependentOperations.shift();
@@ -47,6 +55,9 @@ export class OperationTransformStrategy {
       );
       const includedOgOperation = excludedOperation.includeAll(originalOperations);
       originalOperations.push(includedOgOperation);
+    }
+    if (shouldLog) {
+      console.log('originals', originalOperations.map((it) => it.operation));
     }
     return originalOperations;
   }

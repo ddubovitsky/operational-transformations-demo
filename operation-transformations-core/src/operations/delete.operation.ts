@@ -96,6 +96,7 @@ export class DeleteOperation implements Operation {
      return this.excludeDeleteDelete(operation);
     }
 
+    throw 'Unexpected operation type exclude' + operation;
   }
 
   excludeDeleteDelete(operation: DeleteOperation){

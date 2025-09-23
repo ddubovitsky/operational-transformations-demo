@@ -1,6 +1,6 @@
 import {
   getOperationStartEnd,
-  intersectDeleteInsertOperations,
+  intersectDeleteInsertOperations, intersectDeleteInsertOperations2,
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
@@ -64,7 +64,6 @@ export class InsertOperation implements Operation {
   }
 
   exclude(operation: Operation) {
-
     if (operation instanceof InsertOperation) {
       return this.excludeInsertInsert(operation);
     }
@@ -72,6 +71,8 @@ export class InsertOperation implements Operation {
     if (operation instanceof DeleteOperation) {
       return this.excludeInsertDelete(operation);
     }
+
+    throw 'Unexpected Exclude';
   }
 
   private moveRightBy(amount: number) {
@@ -119,6 +120,7 @@ export class InsertOperation implements Operation {
     const operationStartEnd = getOperationStartEnd(operation);
 
     if (overlapType === IntersectionType.OnTheLeft) {
+      console.log('store moved');
       return this.moveRightBy(operationStartEnd.lengthDiff);
     }
 
@@ -137,7 +139,7 @@ export class InsertOperation implements Operation {
       return recoverLi(operation, this);
     }
 
-    let overlapType = intersectDeleteInsertOperations(operation, this);
+    let overlapType = intersectDeleteInsertOperations2(this, operation);
 
     const operationStartEnd = getOperationStartEnd(operation);
 
