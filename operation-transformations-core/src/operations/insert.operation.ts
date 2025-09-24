@@ -95,10 +95,9 @@ export class InsertOperation implements Operation {
     // if (originalSiteId < operationSiteId) {
     //   return
     // } else {
-    //   return this.moveRightBy(operationStartEnd.lengthDiff);
     // }
 
-    return this.moveRightBy(0);
+      return this.moveRightBy(operationStartEnd.lengthDiff);
   }
 
   private excludeInsertInsert(operation: InsertOperation) {

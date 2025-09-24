@@ -33,6 +33,15 @@ describe('Exclude delete from insert', (t) => {
     assert.deepEqual(target.exclude(operation), new InsertOperation(7, 'ochen '));
   });
 
+  it('Exclude delete just at the start 2', () => {
+    const operation = new DeleteOperation(0, 7);
+    const target = new InsertOperation(0, 'ochen ')
+    const included = target.include(operation);
+    assert.deepEqual(included, new InsertOperation(0, 'ochen '));
+    const excluded = included.exclude(operation);
+    assert.deepEqual(excluded, new InsertOperation(0, 'ochen '));
+  });
+
 
   it('Exclude delete overlaps', () => {
     const operation = new DeleteOperation(2, 3);
