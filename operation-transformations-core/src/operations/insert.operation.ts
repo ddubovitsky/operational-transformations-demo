@@ -1,6 +1,6 @@
 import {
   getOperationStartEnd,
-  intersectDeleteInsertOperations2,
+  intersectDeleteInsertOperations2, intersectIncludeDelete,
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
@@ -64,6 +64,10 @@ export class InsertOperation implements Operation {
   }
 
   exclude(operation: Operation) {
+    if(checkLi(operation, this)){
+      return recoverLi(operation, this);
+    }
+
     if (operation instanceof InsertOperation) {
       return this.excludeInsertInsert(operation);
     }
@@ -109,7 +113,7 @@ export class InsertOperation implements Operation {
 
 
   private includeInsertDelete(operation: DeleteOperation) {
-    let overlapType = intersectOperations(this, operation);
+    let overlapType = intersectIncludeDelete(this, operation);
     const operationStartEnd = getOperationStartEnd(operation);
 
     if (overlapType === IntersectionType.OnTheLeft) {
@@ -120,7 +124,7 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(0);
     }
 
-    const position = Math.min(operation.getPositionStart(), this.getPosition());
+    const position = operation.getPositionStart();
     const result = new InsertOperation(position, this.getInsertString());
     saveLi(this, operation, result);
     return result;
