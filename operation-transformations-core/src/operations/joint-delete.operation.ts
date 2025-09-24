@@ -11,6 +11,7 @@ export class JointDeleteOperation implements Operation {
   private readonly second: DeleteOperation;
 
   constructor(first: DeleteOperation, second: DeleteOperation) {
+    // console.log('created joint');
     this.first = first;
     this.second = second;
   }
@@ -82,7 +83,7 @@ export class JointDeleteOperation implements Operation {
       return new DeleteOperation(newFirst.getPositionStart(), newFirst.getAmount() + newSecond.getAmount());
     }
 
-    console.log('wtf jointed');
+    // console.log('wtf jointed');
   }
 
   clone(): Operation {

@@ -3,7 +3,7 @@ import { DoubleMap } from './double-map.class.ts';
 import { Operation } from '../operation.interface.ts';
 
 
-const savedOps = new DoubleMap();
+let savedOps = new DoubleMap();
 
 export function saveLi(originalOperation: Operation, transformOperation: Operation, resultingOperation: Operation) {
   savedOps.set(resultingOperation, transformOperation, originalOperation);
@@ -18,7 +18,7 @@ export function recoverLi(transformOperation: Operation, resultingOperation: Ope
 }
 
 
-const savedRelativeAddressing = new Map();
+let savedRelativeAddressing = new Map();
 
 
 export function saveRa(resultingOperation: Operation, transformOperation: Operation) {
@@ -46,4 +46,14 @@ export function isDevMode(): boolean {
 
 export function reportError(error: string) {
   console.error(error);
+}
+
+export function resetState(){
+  savedOps = new DoubleMap();
+  savedRelativeAddressing = new Map();
+}
+
+export function logState(){
+  console.log(savedOps.map);
+  // console.dir(savedRelativeAddressing);
 }

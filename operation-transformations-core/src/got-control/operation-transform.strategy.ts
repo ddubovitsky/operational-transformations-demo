@@ -44,20 +44,22 @@ export class OperationTransformStrategy {
     listOfOperations: TimestampedOperation[],
   ) {
     if (shouldLog) {
-      console.log('dependant', listOfOperations.map((it) => it.operation));
+      // console.log('dependant', listOfOperations.map((it) => it.operation));
     }
 
+    debugger;
     const originalOperations: TimestampedOperation[] = [];
     while (listOfDependentOperations.length > 0) {
       const dependentOperation = listOfDependentOperations.shift();
-      const excludedOperation = dependentOperation.excludeAll(
-        listOfOperations.slice(0, listOfOperations.indexOf(dependentOperation)).reverse(),
-      );
+      const operationsPrecedingCurrent =
+        listOfOperations.slice(0, listOfOperations.indexOf(dependentOperation))
+          .reverse();
+      const excludedOperation = dependentOperation.excludeAll(operationsPrecedingCurrent);
       const includedOgOperation = excludedOperation.includeAll(originalOperations);
       originalOperations.push(includedOgOperation);
     }
     if (shouldLog) {
-      console.log('originals', originalOperations.map((it) => it.operation));
+      // console.log('originals', originalOperations.map((it) => it.operation));
     }
     return originalOperations;
   }

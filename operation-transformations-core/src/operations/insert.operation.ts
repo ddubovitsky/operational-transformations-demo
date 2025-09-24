@@ -76,6 +76,7 @@ export class InsertOperation implements Operation {
   }
 
   private moveRightBy(amount: number) {
+    // console.log(this, 'moved by', amount);
     return new InsertOperation(this.position + amount, this.insertString);
   }
 
@@ -90,12 +91,14 @@ export class InsertOperation implements Operation {
     if (overlapType === IntersectionType.OnTheRight) {
       return this.moveRightBy(0);
     }
+    //
+    // if (originalSiteId < operationSiteId) {
+    //   return
+    // } else {
+    //   return this.moveRightBy(operationStartEnd.lengthDiff);
+    // }
 
-    if (originalSiteId < operationSiteId) {
-      return this.moveRightBy(0);
-    } else {
-      return this.moveRightBy(operationStartEnd.lengthDiff);
-    }
+    return this.moveRightBy(0);
   }
 
   private excludeInsertInsert(operation: InsertOperation) {
@@ -120,7 +123,6 @@ export class InsertOperation implements Operation {
     const operationStartEnd = getOperationStartEnd(operation);
 
     if (overlapType === IntersectionType.OnTheLeft) {
-      console.log('store moved');
       return this.moveRightBy(operationStartEnd.lengthDiff);
     }
 

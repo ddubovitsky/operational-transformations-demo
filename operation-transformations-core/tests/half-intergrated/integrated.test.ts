@@ -95,26 +95,25 @@ describe('Integrated test', () => {
   it('should correctly handle consequentual deletes', () => {
     const operations = {
       '1': new InsertOperation(0, 'letila korova'),
-      '2': new DeleteOperation(0, 7),
-      '4': new InsertOperation(10, 'porkhala '),
-      '5': new DeleteOperation(3, 7),
-      '6': new InsertOperation(3, 'ochen '),
+      '2': new DeleteOperation(0, 7), //remove letila
+      '4': new InsertOperation(7, 'porkhala '),
+      '5': new DeleteOperation(0, 7),// remove letila
+      '6': new InsertOperation(0, 'ochen '),
     };
 
     new OperationsPlayer().playOperations(
       `
       S1:1--2-------
-      S2:-x---4-5-6-
+      S2:-x---4-5-6--
       `,
       (site, operationId) => {
         return sites[site].addLocalOperation(operations[operationId]);
       }, (site, operation) => {
-        // console.log('play op', operation.operation);
         sites[site].addRemoteOperation(operation);
       });
 
-    // assert.deepEqual(sites['S1'].produceResult(), 'porkhala korova');
-    // assert.deepEqual(sites['S2'].produceResult(), 'letila porkhala korova');
+    assert.deepEqual(sites['S1'].produceResult(), 'ochen porkhala korova');
+    assert.deepEqual(sites['S2'].produceResult(), 'ochen porkhala korova');
   });
 
   it('should correctly handle consequentual deletes 2', () => {

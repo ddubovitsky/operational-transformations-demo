@@ -46,7 +46,7 @@ export function intersectDeleteInsertOperations(operationA: DeleteOperation, ope
   const operationARange = getOperationStartEnd(operationA);
   const operationBRange = getOperationStartEnd(operationB);
 
-  console.log(operationARange, operationBRange);
+  // console.log(operationARange, operationBRange);
   if (operationBRange.start <= operationARange.start) {
     return IntersectionType.OnTheLeft;
   }
@@ -64,13 +64,13 @@ export function intersectDeleteInsertOperations2(operationA: InsertOperation, op
   const operationARange = getOperationStartEnd(operationA);
   const operationBRange = getOperationStartEnd(operationB);
 
-  console.log(operationARange, operationBRange);
-  if (operationBRange.start <= operationARange.start) {
-    return IntersectionType.OnTheLeft;
+
+  if (operationARange.start < operationBRange.start) {
+    return IntersectionType.OnTheRight;
   }
 
-  if (operationARange.end <= operationBRange.start) {
-    return IntersectionType.OnTheRight;
+  if (operationARange.start >= operationARange.start) {
+    return IntersectionType.OnTheLeft;
   }
 
   return IntersectionType.Overlap;

@@ -30,6 +30,7 @@ export class DeleteOperation implements Operation {
 
 
   public moveRightBy(amount: number) {
+    // console.log(this, 'moved by', amount);
     return new DeleteOperation(this.positionStart + amount, this.amount);
   }
 
@@ -145,6 +146,11 @@ export class DeleteOperation implements Operation {
     const currentEnd = this.positionStart + this.amount;
 
     let result: Operation;
+    // console.log(`
+    // exclude delete
+    // currentOperation delete: ${JSON.stringify(getOperationStartEnd(this))}
+    // exclude Insert: ${JSON.stringify(getOperationStartEnd(operation))}
+    // `)
     if (this.positionStart < operationStartEnd.start && currentEnd < operationStartEnd.end) {
       const insertionStart = operationStartEnd.start;
       const newAmount = insertionStart - this.positionStart;
@@ -163,6 +169,9 @@ export class DeleteOperation implements Operation {
       result = new DeleteOperation(this.positionStart, 0);
     }
 
+    if(!result){
+      throw 'result should be present';
+    }
     saveRa(result, operation);
     return result;
   }
