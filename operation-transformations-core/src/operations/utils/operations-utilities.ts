@@ -34,6 +34,18 @@ export function getRa(resultingOperation: Operation) {
 export function recoverRa(operation: Operation, baseOperation, resultingOperation: Operation) {
   return savedRelativeAddressing.get(resultingOperation);
 }
+
+
+let savedIRelativeAddressing = new Map();
+
+export function saveIRa(resultingOperation: Operation, originalOperation: Operation) {
+  savedIRelativeAddressing.set(resultingOperation, originalOperation);
+}
+
+
+export function getIra(resultingOperation: Operation) {
+  return savedIRelativeAddressing.get(resultingOperation);
+}
 //
 // export function recoverLi(transformOperation: Operation, resultingOperation: Operation) {
 //   return savedOps.get(resultingOperation, transformOperation);

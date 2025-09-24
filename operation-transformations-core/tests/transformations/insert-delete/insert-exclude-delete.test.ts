@@ -21,6 +21,7 @@ describe('Exclude delete from insert', (t) => {
     assert.deepEqual(excludedTarget, target);
   });
 
+
   it('Exclude delete just at the start', () => {
     const operation = new DeleteOperation(0, 7);
     const target = new InsertOperation(0, 'porkhala');
@@ -33,7 +34,7 @@ describe('Exclude delete from insert', (t) => {
     assert.deepEqual(target.exclude(operation), new InsertOperation(7, 'ochen '));
   });
 
-  it('Exclude delete just at the start 2', () => {
+  it('Exclude delete just at the start 2 3', () => {
     const operation = new DeleteOperation(0, 7);
     const target = new InsertOperation(0, 'ochen ')
     const included = target.include(operation);

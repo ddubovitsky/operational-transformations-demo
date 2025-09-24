@@ -26,21 +26,6 @@ export function intersectOperations(operationA: Operation, operationB: Operation
 }
 
 
-export function intersectIncludeDelete(operationA: Operation, operationB: Operation): IntersectionType {
-  const operationARange = getOperationStartEnd(operationA);
-  const operationBRange = getOperationStartEnd(operationB);
-
-
-  if (operationARange.start <= operationBRange.start) {
-    return IntersectionType.OnTheRight;
-  }
-
-  if (operationARange.start > operationBRange.end) {
-    return IntersectionType.OnTheLeft;
-  }
-
-  return IntersectionType.Overlap;
-}
 
 
 export function intersectInsertOperations(operationA: Operation, operationB: Operation): IntersectionType {
@@ -77,8 +62,8 @@ export function intersectDeleteInsertOperations(operationA: DeleteOperation, ope
 }
 
 
-export function intersectDeleteInsertOperations2(operationA: InsertOperation, operationB: DeleteOperation): IntersectionType {
 
+export function intersectIncludeDelete(operationA: Operation, operationB: Operation): IntersectionType {
   const operationARange = getOperationStartEnd(operationA);
   const operationBRange = getOperationStartEnd(operationB);
 
@@ -87,7 +72,25 @@ export function intersectDeleteInsertOperations2(operationA: InsertOperation, op
     return IntersectionType.OnTheRight;
   }
 
-  if (operationARange.start >= operationARange.start) {
+  if (operationARange.start > operationBRange.end) {
+    return IntersectionType.OnTheLeft;
+  }
+
+  return IntersectionType.Overlap;
+}
+
+export function intersectInsertExcludeDelete(operationA: InsertOperation, operationB: DeleteOperation): IntersectionType {
+
+  const operationARange = getOperationStartEnd(operationA);
+  const operationBRange = getOperationStartEnd(operationB);
+
+  console.log(operationARange);
+  console.log(operationBRange);
+  if (operationARange.start < operationBRange.start) {
+    return IntersectionType.OnTheRight;
+  }
+
+  if (operationARange.start > operationBRange.start) {
     return IntersectionType.OnTheLeft;
   }
 

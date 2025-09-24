@@ -1,12 +1,11 @@
 import {
   getOperationStartEnd,
-  intersectDeleteInsertOperations2, intersectIncludeDelete,
-  intersectInsertOperations,
+  intersectInsertExcludeDelete,
+  intersectIncludeDelete,
   IntersectionType,
-  intersectOperations,
 } from './utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
-import { checkLi, getRa, isDevMode, recoverLi, reportError, saveLi, saveRa } from './utils/operations-utilities.ts';
+import { checkLi, getIra, getRa, isDevMode, recoverLi, reportError, saveIRa, saveLi, saveRa } from './utils/operations-utilities.ts';
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
@@ -64,7 +63,7 @@ export class InsertOperation implements Operation {
   }
 
   exclude(operation: Operation) {
-    if(checkLi(operation, this)){
+    if (checkLi(operation, this)) {
       return recoverLi(operation, this);
     }
 
@@ -92,7 +91,26 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(0);
     }
 
-    return this.moveRightBy(operationStartEnd.lengthDiff);
+    if (operation.position < this.position) {
+      return this.moveRightBy(operationStartEnd.lengthDiff);
+    }
+
+
+
+    console.log('overlap');
+    if(getIra(this)){ // for cases when initial include was to the right of this include, but undefined range happened
+      const og: InsertOperation = getIra(this);
+      if(og.position > operationStartEnd.start){
+        return this.moveRightBy(operationStartEnd.lengthDiff);
+      }
+      return this.moveRightBy(0);
+    }
+
+    if(originalSiteId === operationSiteId){ // thats for sure
+      return this.moveRightBy(0);
+    }
+
+    return this.moveRightBy(0);
   }
 
   private excludeInsertInsert(operation: InsertOperation) {
@@ -120,13 +138,16 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(operationStartEnd.lengthDiff);
     }
 
-    if (overlapType === IntersectionType.OnTheRight) {
+    if (overlapType === IntersectionType.OnTheRight)
+    {
+      console.log('on the right');
       return this.moveRightBy(0);
     }
 
     const position = operation.getPositionStart();
     const result = new InsertOperation(position, this.getInsertString());
     saveLi(this, operation, result);
+    saveIRa(result, this);
     return result;
   }
 
@@ -135,7 +156,7 @@ export class InsertOperation implements Operation {
       return recoverLi(operation, this);
     }
 
-    let overlapType = intersectDeleteInsertOperations2(this, operation);
+    let overlapType = intersectInsertExcludeDelete(this, operation);
 
     const operationStartEnd = getOperationStartEnd(operation);
 
