@@ -129,7 +129,7 @@ describe('Integrated test', () => {
     new OperationsPlayer().playOperations(
       `
       S1:1--2--------
-      S2:-x--3-4-5-6-
+      S2:-x--3-4-
       `,
       (site, operationId) => {
         return sites[site].addLocalOperation(operations[operationId]);
@@ -137,7 +137,7 @@ describe('Integrated test', () => {
         sites[site].addRemoteOperation(operation);
       });
 
-    assert.deepEqual(sites['S1'].produceResult(), 'ne ochen porkhala korova');
-    assert.deepEqual(sites['S2'].produceResult(), 'ne ochen porkhala korova');
+    assert.deepEqual(sites['S1'].produceResult(), 'ne porkhala korova');
+    assert.deepEqual(sites['S2'].produceResult(), 'ne letila porkhala korova');
   });
 });
