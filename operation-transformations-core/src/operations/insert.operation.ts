@@ -1,6 +1,6 @@
 import {
   getOperationStartEnd,
-  intersectDeleteInsertOperations, intersectDeleteInsertOperations2,
+  intersectDeleteInsertOperations2,
   intersectInsertOperations,
   IntersectionType,
   intersectOperations,
@@ -82,22 +82,13 @@ export class InsertOperation implements Operation {
 
   private includeInsertInsert(operation: InsertOperation, originalSiteId?: number, operationSiteId?: number) {
     const operationStartEnd = getOperationStartEnd(operation);
-    const overlapType = intersectInsertOperations(this, operation);
+    // const overlapType = intersectInsertOperations(this, operation);
 
-    if (overlapType === IntersectionType.OnTheLeft) {
-      return this.moveRightBy(operationStartEnd.lengthDiff);
-    }
-
-    if (overlapType === IntersectionType.OnTheRight) {
+    if (operation.position > this.position) {
       return this.moveRightBy(0);
     }
-    //
-    // if (originalSiteId < operationSiteId) {
-    //   return
-    // } else {
-    // }
 
-      return this.moveRightBy(operationStartEnd.lengthDiff);
+    return this.moveRightBy(operationStartEnd.lengthDiff);
   }
 
   private excludeInsertInsert(operation: InsertOperation) {
