@@ -140,4 +140,29 @@ describe('Integrated test', () => {
     assert.deepEqual(sites['S1'].produceResult(), 'ne porkhala korova');
     assert.deepEqual(sites['S2'].produceResult(), 'ne letila porkhala korova');
   });
+
+  it('should correctly handle consequentual deletes 3 uses split delete', () => {
+    const operations = {
+      '1': new InsertOperation(0, 'letila korova slovo'),
+      '2': new InsertOperation(14, 'skazala '),
+      '3': new DeleteOperation(7, 12),
+      '4': new InsertOperation(7, 'porkhala'),
+      '5': new DeleteOperation(3, 7),
+      '6': new InsertOperation(3, 'ochen '),
+    };
+
+    new OperationsPlayer().playOperations(
+      `
+      S1:1--2---------
+      S2:-x--3-4---
+      `,
+      (site, operationId) => {
+        return sites[site].addLocalOperation(operations[operationId]);
+      }, (site, operation) => {
+          sites[site].addRemoteOperation(operation);
+      });
+
+    assert.deepEqual(sites['S1'].produceResult(), 'letila skazala ');
+    assert.deepEqual(sites['S2'].produceResult(), 'letila porkhala');
+  });
 });
