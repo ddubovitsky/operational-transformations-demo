@@ -41,13 +41,11 @@ export class InsertOperation implements Operation {
   }
 
   execute(input: string): string {
-    let position = this.position;
     if (input.length < this.position) {
-      position = input.length
-      // throw 'Unexpected position ' + this.position + ' ' + input.length;
+      throw 'Unexpected position ' + this.position + ' ' + input.length;
     }
 
-    return input.substring(0, position) + this.insertString + input.substring(position, input.length);
+    return input.substring(0, this.position) + this.insertString + input.substring(this.position, input.length);
   }
 
 
@@ -84,6 +82,7 @@ export class InsertOperation implements Operation {
       return this.excludeInsertDelete(operation);
     }
 
+    console.log(this, operation);
     throw 'Unexpected Exclude';
   }
 
@@ -142,7 +141,7 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(0);
     }
 
-    if (operation.second.getPositionStart() + operation.second.getAmount() < this.position) {
+    if (operation.second.getPositionStart() + operation.second.getAmount() <= this.position) {
 
       return this.moveRightBy(-(operation.first.getAmount() + operation.second.getAmount()));
     }

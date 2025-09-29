@@ -154,7 +154,7 @@ describe('Integrated test', () => {
     new OperationsPlayer().playOperations(
       `
       S1:1--2---------
-      S2:-x--3-4-6--
+      S2:-x--3-4--6-
       `,
       (site, operationId) => {
         return sites[site].addLocalOperation(operations[operationId]);
