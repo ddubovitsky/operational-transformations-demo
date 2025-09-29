@@ -1,7 +1,7 @@
 import {
   getOperationStartEnd,
-  intersectInsertExcludeDelete,
   intersectIncludeDelete,
+  intersectInsertExcludeDelete,
   IntersectionType,
 } from './utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
@@ -9,6 +9,7 @@ import { checkLi, getIra, getRa, isDevMode, recoverLi, reportError, saveIRa, sav
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
+import { JointDeleteOperation } from './joint-delete.operation.ts';
 
 export class InsertOperation implements Operation {
 
@@ -40,11 +41,13 @@ export class InsertOperation implements Operation {
   }
 
   execute(input: string): string {
+    let position = this.position;
     if (input.length < this.position) {
-      throw 'Unexpected position';
+      position = input.length
+      // throw 'Unexpected position ' + this.position + ' ' + input.length;
     }
 
-    return input.substring(0, this.position) + this.insertString + input.substring(this.position, input.length);
+    return input.substring(0, position) + this.insertString + input.substring(position, input.length);
   }
 
 
@@ -60,6 +63,12 @@ export class InsertOperation implements Operation {
     if (operation instanceof DeleteOperation) {
       return this.includeInsertDelete(operation);
     }
+
+    if (operation instanceof JointDeleteOperation) {
+      return this.includeJointDelete(operation);
+    }
+
+    throw 'include ' + operation.constructor.name + ' hot handled';
   }
 
   exclude(operation: Operation) {
@@ -96,17 +105,15 @@ export class InsertOperation implements Operation {
     }
 
 
-
-    console.log('overlap');
-    if(getIra(this)){ // for cases when initial include was to the right of this include, but undefined range happened
+    if (getIra(this)) { // for cases when initial include was to the right of this include, but undefined range happened
       const og: InsertOperation = getIra(this);
-      if(og.position > operationStartEnd.start){
+      if (og.position > operationStartEnd.start) {
         return this.moveRightBy(operationStartEnd.lengthDiff);
       }
       return this.moveRightBy(0);
     }
 
-    if(originalSiteId === operationSiteId){ // thats for sure
+    if (originalSiteId === operationSiteId) { // thats for sure
       return this.moveRightBy(0);
     }
 
@@ -130,6 +137,19 @@ export class InsertOperation implements Operation {
   }
 
 
+  private includeJointDelete(operation: JointDeleteOperation) {
+    if (operation.first.getPositionStart() > this.position) {
+      return this.moveRightBy(0);
+    }
+
+    if (operation.second.getPositionStart() + operation.second.getAmount() < this.position) {
+
+      return this.moveRightBy(-(operation.first.getAmount() + operation.second.getAmount()));
+    }
+
+    return this.includeInsertDelete(operation.first).includeInsertDelete(operation.second);
+  }
+
   private includeInsertDelete(operation: DeleteOperation) {
     let overlapType = intersectIncludeDelete(this, operation);
     const operationStartEnd = getOperationStartEnd(operation);
@@ -138,8 +158,7 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(operationStartEnd.lengthDiff);
     }
 
-    if (overlapType === IntersectionType.OnTheRight)
-    {
+    if (overlapType === IntersectionType.OnTheRight) {
       console.log('on the right');
       return this.moveRightBy(0);
     }

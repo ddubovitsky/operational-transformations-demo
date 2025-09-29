@@ -7,8 +7,8 @@ import { getOperationStartEnd } from './utils/operations-intersections.util.ts';
 import { saveLi } from './utils/operations-utilities.ts';
 
 export class JointDeleteOperation implements Operation {
-  private readonly first: DeleteOperation;
-  private readonly second: DeleteOperation;
+   readonly first: DeleteOperation;
+   readonly second: DeleteOperation;
 
   constructor(first: DeleteOperation, second: DeleteOperation) {
     // console.log('created joint');
@@ -39,11 +39,11 @@ export class JointDeleteOperation implements Operation {
 
 
     if (getOperationStartEnd(first).lengthDiff === 0) {
-      saveLi(this, deleteOperation, second)
+      saveLi(this, deleteOperation, second);
       return second;
     }
     if (getOperationStartEnd(second).lengthDiff === 0) {
-      saveLi(this, deleteOperation, first)
+      saveLi(this, deleteOperation, first);
       return first;
     }
 
@@ -56,6 +56,8 @@ export class JointDeleteOperation implements Operation {
     if (operation instanceof DeleteOperation) {
       return this.includeDeleteOperation(operation);
     }
+
+    throw 'Joint Delete include insert not included';
   }
 
   exclude(operation: Operation) {
@@ -83,6 +85,7 @@ export class JointDeleteOperation implements Operation {
       return new DeleteOperation(newFirst.getPositionStart(), newFirst.getAmount() + newSecond.getAmount());
     }
 
+    throw 'Joint Delete include exclude not included';
     // console.log('wtf jointed');
   }
 

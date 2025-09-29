@@ -84,13 +84,11 @@ export function intersectInsertExcludeDelete(operationA: InsertOperation, operat
   const operationARange = getOperationStartEnd(operationA);
   const operationBRange = getOperationStartEnd(operationB);
 
-  console.log(operationARange);
-  console.log(operationBRange);
   if (operationARange.start < operationBRange.start) {
     return IntersectionType.OnTheRight;
   }
 
-  if (operationARange.start > operationBRange.start) {
+  if (operationARange.start >= operationBRange.start) {
     return IntersectionType.OnTheLeft;
   }
 

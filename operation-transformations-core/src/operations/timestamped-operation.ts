@@ -20,7 +20,9 @@ export class TimestampedOperation {
   includeAll(operations: TimestampedOperation[]){
     let operation: TimestampedOperation = this;
     operations.forEach((it)=> {
+      console.log(operation, it);
       operation = operation.include(it);
+      console.log(operation);
     });
     return operation;
   }

@@ -148,21 +148,22 @@ describe('Integrated test', () => {
       '3': new DeleteOperation(7, 12),
       '4': new InsertOperation(7, 'porkhala'),
       '5': new DeleteOperation(3, 7),
-      '6': new InsertOperation(3, 'ochen '),
+      '6': new InsertOperation(7, ' ochen'),
     };
 
     new OperationsPlayer().playOperations(
       `
       S1:1--2---------
-      S2:-x--3-4---
+      S2:-x--3-4-6--
       `,
       (site, operationId) => {
         return sites[site].addLocalOperation(operations[operationId]);
       }, (site, operation) => {
+        // console.log(operation);
           sites[site].addRemoteOperation(operation);
       });
 
-    assert.deepEqual(sites['S1'].produceResult(), 'letila skazala ');
-    assert.deepEqual(sites['S2'].produceResult(), 'letila porkhala');
+    assert.deepEqual(sites['S1'].produceResult(), 'letila skazala ochen porkhala');
+    assert.deepEqual(sites['S2'].produceResult(), 'letila ochen porkhala');
   });
 });

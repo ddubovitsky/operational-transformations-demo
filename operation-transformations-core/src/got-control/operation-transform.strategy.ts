@@ -26,7 +26,10 @@ export class OperationTransformStrategy {
       return operation.includeAll(operationsAfterFirstIndependent.getList());
     }
 
-    return this.transformOperationIncludingDependantOperations(operation, operationsAfterFirstIndependent);
+
+    const transformed = this.transformOperationIncludingDependantOperations(operation, operationsAfterFirstIndependent);
+    console.log(transformed);
+    return transformed;
   }
 
   private transformOperationIncludingDependantOperations(
@@ -36,6 +39,7 @@ export class OperationTransformStrategy {
     const listOfDependentOperations = mixedOperationsList.getDependent(operation);
 
     const originalIncludedOperations = this.restoreOriginalIncludedOperations(listOfDependentOperations, mixedOperationsList.getListCopy());
+
     return operation.excludeAll(originalIncludedOperations.reverse()).includeAll(mixedOperationsList.getList());
   }
 
@@ -43,11 +47,7 @@ export class OperationTransformStrategy {
     listOfDependentOperations: TimestampedOperation[],
     listOfOperations: TimestampedOperation[],
   ) {
-    if (shouldLog) {
-      // console.log('dependant', listOfOperations.map((it) => it.operation));
-    }
 
-    debugger;
     const originalOperations: TimestampedOperation[] = [];
     while (listOfDependentOperations.length > 0) {
       const dependentOperation = listOfDependentOperations.shift();
@@ -57,9 +57,6 @@ export class OperationTransformStrategy {
       const excludedOperation = dependentOperation.excludeAll(operationsPrecedingCurrent);
       const includedOgOperation = excludedOperation.includeAll(originalOperations);
       originalOperations.push(includedOgOperation);
-    }
-    if (shouldLog) {
-      // console.log('originals', originalOperations.map((it) => it.operation));
     }
     return originalOperations;
   }
