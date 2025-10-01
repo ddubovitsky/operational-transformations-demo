@@ -11,7 +11,6 @@ export class JointDeleteOperation implements Operation {
    readonly second: DeleteOperation;
 
   constructor(first: DeleteOperation, second: DeleteOperation) {
-    // console.log('created joint');
     this.first = first;
     this.second = second;
   }
@@ -86,7 +85,6 @@ export class JointDeleteOperation implements Operation {
     }
 
     throw 'Joint Delete include exclude not included';
-    // console.log('wtf jointed');
   }
 
   clone(): Operation {
@@ -102,6 +100,10 @@ export class JointDeleteOperation implements Operation {
       this, vector,
       siteId,
     );
+  }
+
+  toString(){
+    return '[Joined' + this.first.toString() + ' & ' + this.second.toString() +']'
   }
 }
 

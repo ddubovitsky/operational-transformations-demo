@@ -7,6 +7,7 @@ let shouldLog = false;
 
 export class OperationTransformStrategy {
   transformOperation(site: Site, operation: TimestampedOperation) {
+    console.log("BEGIN TRANSFORM");
     shouldLog = operation.operation instanceof InsertOperation && operation.operation.getInsertString() === 'ochen ';
 
     if (site.stateVector.isContextuallyEqual(operation.vector)) {
@@ -28,7 +29,7 @@ export class OperationTransformStrategy {
 
 
     const transformed = this.transformOperationIncludingDependantOperations(operation, operationsAfterFirstIndependent);
-    console.log(transformed);
+
     return transformed;
   }
 
@@ -39,7 +40,8 @@ export class OperationTransformStrategy {
     const listOfDependentOperations = mixedOperationsList.getDependent(operation);
 
     const originalIncludedOperations = this.restoreOriginalIncludedOperations(listOfDependentOperations, mixedOperationsList.getListCopy());
-
+    console.log('ORIGINALS RESTORED');
+    console.log(originalIncludedOperations.map((it)=> it.operation.toString()));
     return operation.excludeAll(originalIncludedOperations.reverse()).includeAll(mixedOperationsList.getList());
   }
 
@@ -51,6 +53,7 @@ export class OperationTransformStrategy {
     const originalOperations: TimestampedOperation[] = [];
     while (listOfDependentOperations.length > 0) {
       const dependentOperation = listOfDependentOperations.shift();
+      debugger;
       const operationsPrecedingCurrent =
         listOfOperations.slice(0, listOfOperations.indexOf(dependentOperation))
           .reverse();

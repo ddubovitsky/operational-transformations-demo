@@ -59,7 +59,7 @@ export class StateVector {
   }
 
   isPrecedingForSite(stateVector2: StateVector, targetSiteId: number) {
-    return this.getSiteCounter(targetSiteId) === stateVector2.getSiteCounter(targetSiteId) -1;
+    return this.getSiteCounter(targetSiteId) === stateVector2.getSiteCounter(targetSiteId) - 1;
   }
 
   isContextuallyEqual(other: StateVector) {
@@ -91,5 +91,14 @@ export class StateVector {
     return Array.from(sitesList).every((site) => {
       return stateVector.getSiteCounter(site) <= this.getSiteCounter(site);
     });
+  }
+
+  isEqual(stateVector: StateVector) {
+    const sitesList = this.getSites().union(stateVector.getSites());
+    const isEqual = Array.from(sitesList).every((site) => {
+      return stateVector.getSiteCounter(site) === this.getSiteCounter(site);
+    });
+
+    return isEqual;
   }
 }

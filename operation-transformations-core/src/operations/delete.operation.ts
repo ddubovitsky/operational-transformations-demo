@@ -1,5 +1,6 @@
 import {
-  getOperationStartEnd, intersectDeleteExcludeDeleteOperation,
+  getOperationStartEnd,
+  intersectDeleteExcludeDeleteOperation,
   intersectDeleteInsertOperations,
   IntersectionType,
   intersectOperations,
@@ -30,7 +31,6 @@ export class DeleteOperation implements Operation {
 
 
   public moveRightBy(amount: number) {
-    // console.log(this, 'moved by', amount);
     return new DeleteOperation(this.positionStart + amount, this.amount);
   }
 
@@ -66,7 +66,7 @@ export class DeleteOperation implements Operation {
   }
 
 
-  includeDeleteDelete(operation: DeleteOperation) {
+  includeDeleteDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
     let overlapType = intersectOperations(this, operation);
 
     const operationStartEnd = getOperationStartEnd(operation);
@@ -84,23 +84,23 @@ export class DeleteOperation implements Operation {
     const totalRange = totalDeleteEnd - position;
     const amount = totalRange - operation.getAmount();
     const result = new DeleteOperation(position, amount);
-    saveLi(this, operation, result);
+    saveLi(this, , result);
     return result;
   }
 
-  exclude(operation: Operation) {
+  exclude(operation: Operation, originalSv: StateVector, transformSv: StateVector) {
     if (operation instanceof InsertOperation) {
-      return this.excludeDeleteInsert(operation);
+      return this.excludeDeleteInsert(operation, originalSv, transformSv);
     }
 
-    if(operation instanceof DeleteOperation){
-     return this.excludeDeleteDelete(operation);
+    if (operation instanceof DeleteOperation) {
+      return this.excludeDeleteDelete(operation);
     }
 
     throw 'Unexpected operation type exclude' + operation;
   }
 
-  excludeDeleteDelete(operation: DeleteOperation){
+  excludeDeleteDelete(operation: DeleteOperation) {
     if (checkLi(operation, this)) {
       return recoverLi(operation, this);
     }
@@ -127,7 +127,7 @@ export class DeleteOperation implements Operation {
     }
   }
 
-  excludeDeleteInsert(operation: InsertOperation) {
+  excludeDeleteInsert(operation: InsertOperation, originalSv: StateVector, transformSv: StateVector) {
     if (checkLi(operation, this)) {
       return recoverLi(operation, this);
     }
@@ -146,11 +146,7 @@ export class DeleteOperation implements Operation {
     const currentEnd = this.positionStart + this.amount;
 
     let result: Operation;
-    // console.log(`
-    // exclude delete
-    // currentOperation delete: ${JSON.stringify(getOperationStartEnd(this))}
-    // exclude Insert: ${JSON.stringify(getOperationStartEnd(operation))}
-    // `)
+
     if (this.positionStart < operationStartEnd.start && currentEnd < operationStartEnd.end) {
       const insertionStart = operationStartEnd.start;
       const newAmount = insertionStart - this.positionStart;
@@ -169,10 +165,10 @@ export class DeleteOperation implements Operation {
       result = new DeleteOperation(this.positionStart, 0);
     }
 
-    if(!result){
+    if (!result) {
       throw 'result should be present';
     }
-    saveRa(result, operation);
+    saveRa(originalSv, transformSv);
     return result;
   }
 
@@ -201,6 +197,6 @@ export class DeleteOperation implements Operation {
   }
 
   toString() {
-    return this.constructor.name + `${this.positionStart} ${this.amount}`;
+    return '[D' + ` ${this.positionStart} ${this.amount}]`;
   }
 }

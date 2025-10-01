@@ -141,9 +141,8 @@ describe('weird case', () => {
     const operation2 = new DeleteOperation(0, 7);
 
     const operation4Transformed = operation4.include(operation2);
-    console.log('transformed', operation4Transformed);
+
     assert.deepEqual(operation4Transformed.exclude(operation2), operation4);
-    // assert.deepEqual(excludedResult, new DeleteOperation(3, 3));
   });
 });
 

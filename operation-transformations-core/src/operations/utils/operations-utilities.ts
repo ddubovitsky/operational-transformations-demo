@@ -1,19 +1,20 @@
 // import { Operation } from './operation.ts';
 import { DoubleMap } from './double-map.class.ts';
 import { Operation } from '../operation.interface.ts';
+import { StateVector } from '../../utils/state-vector/state-vector.class.ts';
 
 
 let savedOps = new DoubleMap();
 
-export function saveLi(originalOperation: Operation, transformOperation: Operation, resultingOperation: Operation) {
+export function saveLi(originalOperation: Operation, transformOperation: StateVector, resultingOperation: StateVector) {
   savedOps.set(resultingOperation, transformOperation, originalOperation);
 }
 
-export function checkLi(transformOperation: Operation, resultingOperation: Operation) {
+export function checkLi(transformOperation: StateVector, resultingOperation: StateVector) {
   return savedOps.has(resultingOperation, transformOperation);
 }
 
-export function recoverLi(transformOperation: Operation, resultingOperation: Operation) {
+export function recoverLi(transformOperation: StateVector, resultingOperation: StateVector) {
   return savedOps.get(resultingOperation, transformOperation);
 }
 
@@ -21,13 +22,13 @@ export function recoverLi(transformOperation: Operation, resultingOperation: Ope
 let savedRelativeAddressing = new Map();
 
 
-export function saveRa(resultingOperation: Operation, transformOperation: Operation) {
-  savedRelativeAddressing.set(resultingOperation, transformOperation);
+export function saveRa(resultingSv: StateVector, transformSv: StateVector) {
+  savedRelativeAddressing.set(resultingSv, transformSv);
 }
 
 //
-export function getRa(resultingOperation: Operation) {
-  return savedRelativeAddressing.get(resultingOperation);
+export function getRa(resultingSv: StateVector):StateVector {
+  return savedRelativeAddressing.get(resultingSv);
 }
 
 
@@ -38,12 +39,12 @@ export function recoverRa(operation: Operation, baseOperation, resultingOperatio
 
 let savedIRelativeAddressing = new Map();
 
-export function saveIRa(resultingOperation: Operation, originalOperation: Operation) {
+export function saveIRa(resultingOperation: StateVector, originalOperation: Operation) {
   savedIRelativeAddressing.set(resultingOperation, originalOperation);
 }
 
 
-export function getIra(resultingOperation: Operation) {
+export function getIra(resultingOperation: StateVector) {
   return savedIRelativeAddressing.get(resultingOperation);
 }
 //

@@ -49,49 +49,66 @@ export class InsertOperation implements Operation {
   }
 
 
-  include(operation: Operation, originalSiteId?: number, operationSiteId?: number) {
-    if (getRa(this) === operation) {
+  include(operation: Operation, originalSiteId?: number, operationSiteId?: number, originalSv?: StateVector, transformSv?: StateVector) {
+    if (getRa(originalSv)?.isEqual(transformSv)) {
+      console.log('restore', this.toString(), operation.toString());
       return this.moveRightBy(getOperationStartEnd(operation).start);
     }
 
     if (operation instanceof InsertOperation) {
-      return this.includeInsertInsert(operation, originalSiteId, operationSiteId);
+      return this.includeInsertInsert(operation, originalSiteId, operationSiteId, originalSv, transformSv);
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.includeInsertDelete(operation);
+      return this.includeInsertDelete(operation, originalSv, transformSv);
     }
 
     if (operation instanceof JointDeleteOperation) {
-      return this.includeJointDelete(operation);
+      return this.includeJointDelete(operation, originalSv, transformSv);
     }
 
     throw 'include ' + operation.constructor.name + ' hot handled';
   }
 
-  exclude(operation: Operation) {
+  exclude(operation: Operation, originalVector?: StateVector, transformSv?: StateVector) {
     if (checkLi(operation, this)) {
       return recoverLi(operation, this);
     }
 
     if (operation instanceof InsertOperation) {
-      return this.excludeInsertInsert(operation);
+      return this.excludeInsertInsert(operation, originalVector,transformSv);
     }
 
     if (operation instanceof DeleteOperation) {
       return this.excludeInsertDelete(operation);
     }
 
-    console.log(this, operation);
+    if (operation instanceof JointDeleteOperation) {
+      return this.insertExcludeJointDelete(operation);
+    }
+
     throw 'Unexpected Exclude';
   }
 
+  private insertExcludeJointDelete(operation: JointDeleteOperation) {
+
+    if (operation.first.getPositionStart() > this.position) {
+      return this.moveRightBy(0);
+    }
+
+    if (operation.second.getPositionStart() + operation.second.getAmount() <= this.position) {
+
+      return this.moveRightBy((operation.first.getAmount() + operation.second.getAmount()));
+    }
+
+    return this.excludeInsertDelete(operation.first).excludeInsertDelete(operation.second);
+  }
+
   private moveRightBy(amount: number) {
-    // console.log(this, 'moved by', amount);
     return new InsertOperation(this.position + amount, this.insertString);
   }
 
-  private includeInsertInsert(operation: InsertOperation, originalSiteId?: number, operationSiteId?: number) {
+  private includeInsertInsert(operation: InsertOperation, originalSiteId?: number, operationSiteId?: number, originalVector?: StateVector, transformSv?: StateVector) {
     const operationStartEnd = getOperationStartEnd(operation);
     // const overlapType = intersectInsertOperations(this, operation);
 
@@ -104,8 +121,10 @@ export class InsertOperation implements Operation {
     }
 
 
-    if (getIra(this)) { // for cases when initial include was to the right of this include, but undefined range happened
-      const og: InsertOperation = getIra(this);
+    if (getIra(originalVector)) { // for cases when initial include was to the right of this include, but undefined range happened
+      console.log('get ira');
+      const og: InsertOperation = getIra(originalVector);
+      console.log(og, og.position, operationStartEnd.start)
       if (og.position > operationStartEnd.start) {
         return this.moveRightBy(operationStartEnd.lengthDiff);
       }
@@ -119,7 +138,7 @@ export class InsertOperation implements Operation {
     return this.moveRightBy(0);
   }
 
-  private excludeInsertInsert(operation: InsertOperation) {
+  private excludeInsertInsert(operation: InsertOperation, operationSv: StateVector, transformSv: StateVector) {
     const operationStartEnd = getOperationStartEnd(operation);
 
     if (this.position <= operation.position) {
@@ -131,12 +150,13 @@ export class InsertOperation implements Operation {
     }
 
     const result = new InsertOperation(this.position - operation.position, this.insertString);
-    saveRa(result, operation);
+    console.log('%csave ra', 'color:red', operationSv, transformSv, operation);
+    saveRa(operationSv, transformSv);
     return result;
   }
 
 
-  private includeJointDelete(operation: JointDeleteOperation) {
+  private includeJointDelete(operation: JointDeleteOperation, originalVector: StateVector,transformVector: StateVector) {
     if (operation.first.getPositionStart() > this.position) {
       return this.moveRightBy(0);
     }
@@ -146,10 +166,10 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(-(operation.first.getAmount() + operation.second.getAmount()));
     }
 
-    return this.includeInsertDelete(operation.first).includeInsertDelete(operation.second);
+    return this.includeInsertDelete(operation.first, originalVector, transformVector).includeInsertDelete(operation.second, originalVector, transformVector);
   }
 
-  private includeInsertDelete(operation: DeleteOperation) {
+  private includeInsertDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
     let overlapType = intersectIncludeDelete(this, operation);
     const operationStartEnd = getOperationStartEnd(operation);
 
@@ -158,14 +178,15 @@ export class InsertOperation implements Operation {
     }
 
     if (overlapType === IntersectionType.OnTheRight) {
-      console.log('on the right');
       return this.moveRightBy(0);
     }
 
     const position = operation.getPositionStart();
     const result = new InsertOperation(position, this.getInsertString());
-    saveLi(this, operation, result);
-    saveIRa(result, this);
+    saveLi(this, transformVector, originalVector);
+    console.log("SAVE IRA");
+    console.log("SAVE LI");
+    saveIRa(originalVector, this);
     return result;
   }
 
@@ -195,6 +216,6 @@ export class InsertOperation implements Operation {
   }
 
   toString() {
-    return this.constructor.name + `${this.position} ${this.insertString}`;
+    return '[I' + ` ${this.position} ${this.insertString}]`;
   }
 }

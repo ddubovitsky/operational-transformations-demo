@@ -34,11 +34,6 @@ export class Site {
 
         const transformed = this.transformStrategy.transformOperation(this, operation);
 
-        if(log){
-          // console.log(operation.operation);
-          // console.log(transformed.operation);
-        }
-
         return this.executeOperation(transformed);
       },
     );
