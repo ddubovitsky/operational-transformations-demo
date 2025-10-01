@@ -60,11 +60,11 @@ export class InsertOperation implements Operation {
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.includeInsertDelete(operation, originalSv, transformSv);
+      return this.includeInsertDelete(operation, originalSiteId, operationSiteId, originalSv, transformSv);
     }
 
     if (operation instanceof JointDeleteOperation) {
-      return this.includeJointDelete(operation, originalSv, transformSv);
+      return this.includeJointDelete(operation, originalSiteId, operationSiteId, originalSv, transformSv);
     }
 
     throw 'include ' + operation.constructor.name + ' hot handled';
@@ -156,7 +156,7 @@ export class InsertOperation implements Operation {
   }
 
 
-  private includeJointDelete(operation: JointDeleteOperation, originalVector: StateVector, transformVector: StateVector) {
+  private includeJointDelete(operation: JointDeleteOperation, originalSiteId: number, transformSiteId: number, originalVector: StateVector, transformVector: StateVector) {
     if (operation.first.getPositionStart() > this.position) {
       return this.moveRightBy(0);
     }
@@ -166,15 +166,15 @@ export class InsertOperation implements Operation {
       return this.moveRightBy(-(operation.first.getAmount() + operation.second.getAmount()));
     }
 
-    return this.includeInsertDelete(operation.first, originalVector, transformVector).includeInsertDelete(operation.second, originalVector, transformVector);
+    return this.includeInsertDelete(operation.first, originalSiteId, transformSiteId, originalVector, transformVector).includeInsertDelete(operation.second, originalSiteId, transformSiteId, originalVector, transformVector);
   }
 
-  private includeInsertDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
+  private includeInsertDelete(operation: DeleteOperation, originalSiteId: number, transformSiteId: number, originalVector: StateVector, transformVector: StateVector) {
     let overlapType = intersectIncludeDelete(this, operation);
     const operationStartEnd = getOperationStartEnd(operation);
 
     if (overlapType === IntersectionType.OnTheLeft) {
-      if(operationStartEnd.end === this.getPosition()){
+      if (operationStartEnd.end === this.getPosition() && originalSiteId != transformSiteId) {
         saveIRa(originalVector, this);
       }
       return this.moveRightBy(operationStartEnd.lengthDiff);
