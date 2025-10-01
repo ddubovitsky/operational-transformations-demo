@@ -72,7 +72,7 @@ export function intersectIncludeDelete(operationA: Operation, operationB: Operat
     return IntersectionType.OnTheRight;
   }
 
-  if (operationARange.start > operationBRange.end) {
+  if (operationARange.start >= operationBRange.end) {
     return IntersectionType.OnTheLeft;
   }
 

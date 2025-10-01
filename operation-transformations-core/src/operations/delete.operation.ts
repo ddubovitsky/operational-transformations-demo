@@ -84,7 +84,7 @@ export class DeleteOperation implements Operation {
     const totalRange = totalDeleteEnd - position;
     const amount = totalRange - operation.getAmount();
     const result = new DeleteOperation(position, amount);
-    saveLi(this, , result);
+    saveLi(this, originalVector, transformVector);
     return result;
   }
 
@@ -94,15 +94,15 @@ export class DeleteOperation implements Operation {
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.excludeDeleteDelete(operation);
+      return this.excludeDeleteDelete(operation, originalSv, transformSv);
     }
 
     throw 'Unexpected operation type exclude' + operation;
   }
 
-  excludeDeleteDelete(operation: DeleteOperation) {
-    if (checkLi(operation, this)) {
-      return recoverLi(operation, this);
+  excludeDeleteDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
+    if (checkLi(transformVector, originalVector)) {
+      return recoverLi(transformVector, originalVector);
     }
 
     const overlapType = intersectDeleteExcludeDeleteOperation(this, operation);
@@ -128,8 +128,8 @@ export class DeleteOperation implements Operation {
   }
 
   excludeDeleteInsert(operation: InsertOperation, originalSv: StateVector, transformSv: StateVector) {
-    if (checkLi(operation, this)) {
-      return recoverLi(operation, this);
+    if (checkLi(transformSv, originalSv)) {
+      return recoverLi(transformSv, originalSv);
     }
     const overlapType = intersectOperations(this, operation);
 
@@ -172,13 +172,13 @@ export class DeleteOperation implements Operation {
     return result;
   }
 
-  include(operation: Operation): DeleteOperation | JointDeleteOperation {
+  include(operation: Operation, originalSite?: number, transformSite?: number, originalVector?: StateVector, transformVector?: StateVector): DeleteOperation | JointDeleteOperation {
     if (operation instanceof InsertOperation) {
       return this.includeDeleteInsert(operation);
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.includeDeleteDelete(operation);
+      return this.includeDeleteDelete(operation, originalVector, transformVector);
     }
 
     throw 'Unexpected operation type ' + operation;

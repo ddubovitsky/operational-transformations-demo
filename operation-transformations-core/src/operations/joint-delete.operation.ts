@@ -32,17 +32,17 @@ export class JointDeleteOperation implements Operation {
   }
 
 
-  includeDeleteOperation(deleteOperation: DeleteOperation) {
+  includeDeleteOperation(deleteOperation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
     const first = this.first.include(deleteOperation);
     const second = this.second.include(deleteOperation);
 
 
     if (getOperationStartEnd(first).lengthDiff === 0) {
-      saveLi(this, deleteOperation, second);
+      saveLi(this, transformVector, originalVector);
       return second;
     }
     if (getOperationStartEnd(second).lengthDiff === 0) {
-      saveLi(this, deleteOperation, first);
+      saveLi(this, transformVector, originalVector);
       return first;
     }
 
@@ -51,9 +51,9 @@ export class JointDeleteOperation implements Operation {
     );
   }
 
-  include(operation: Operation): Operation {
+  include(operation: Operation, o: number, t: number, originalVector: StateVector, transformVector: StateVector): Operation {
     if (operation instanceof DeleteOperation) {
-      return this.includeDeleteOperation(operation);
+      return this.includeDeleteOperation(operation, originalVector, transformVector);
     }
 
     throw 'Joint Delete include insert not included';

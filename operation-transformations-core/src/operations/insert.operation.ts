@@ -71,26 +71,26 @@ export class InsertOperation implements Operation {
   }
 
   exclude(operation: Operation, originalVector?: StateVector, transformSv?: StateVector) {
-    if (checkLi(operation, this)) {
-      return recoverLi(operation, this);
+    if (checkLi(transformSv, originalVector)) {
+      return recoverLi(transformSv, originalVector);
     }
 
     if (operation instanceof InsertOperation) {
-      return this.excludeInsertInsert(operation, originalVector,transformSv);
+      return this.excludeInsertInsert(operation, originalVector, transformSv);
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.excludeInsertDelete(operation);
+      return this.excludeInsertDelete(operation, originalVector, transformSv);
     }
 
     if (operation instanceof JointDeleteOperation) {
-      return this.insertExcludeJointDelete(operation);
+      return this.insertExcludeJointDelete(operation, originalVector, transformSv);
     }
 
     throw 'Unexpected Exclude';
   }
 
-  private insertExcludeJointDelete(operation: JointDeleteOperation) {
+  private insertExcludeJointDelete(operation: JointDeleteOperation, originalVector: StateVector, transformVector: StateVector) {
 
     if (operation.first.getPositionStart() > this.position) {
       return this.moveRightBy(0);
@@ -101,7 +101,7 @@ export class InsertOperation implements Operation {
       return this.moveRightBy((operation.first.getAmount() + operation.second.getAmount()));
     }
 
-    return this.excludeInsertDelete(operation.first).excludeInsertDelete(operation.second);
+    return this.excludeInsertDelete(operation.first, originalVector, transformVector).excludeInsertDelete(operation.second, originalVector, transformVector);
   }
 
   private moveRightBy(amount: number) {
@@ -124,7 +124,7 @@ export class InsertOperation implements Operation {
     if (getIra(originalVector)) { // for cases when initial include was to the right of this include, but undefined range happened
       console.log('get ira');
       const og: InsertOperation = getIra(originalVector);
-      console.log(og, og.position, operationStartEnd.start)
+      console.log(og, og.position, operationStartEnd.start);
       if (og.position > operationStartEnd.start) {
         return this.moveRightBy(operationStartEnd.lengthDiff);
       }
@@ -156,7 +156,7 @@ export class InsertOperation implements Operation {
   }
 
 
-  private includeJointDelete(operation: JointDeleteOperation, originalVector: StateVector,transformVector: StateVector) {
+  private includeJointDelete(operation: JointDeleteOperation, originalVector: StateVector, transformVector: StateVector) {
     if (operation.first.getPositionStart() > this.position) {
       return this.moveRightBy(0);
     }
@@ -174,6 +174,9 @@ export class InsertOperation implements Operation {
     const operationStartEnd = getOperationStartEnd(operation);
 
     if (overlapType === IntersectionType.OnTheLeft) {
+      if(operationStartEnd.end === this.getPosition()){
+        saveIRa(originalVector, this);
+      }
       return this.moveRightBy(operationStartEnd.lengthDiff);
     }
 
@@ -184,15 +187,13 @@ export class InsertOperation implements Operation {
     const position = operation.getPositionStart();
     const result = new InsertOperation(position, this.getInsertString());
     saveLi(this, transformVector, originalVector);
-    console.log("SAVE IRA");
-    console.log("SAVE LI");
     saveIRa(originalVector, this);
     return result;
   }
 
-  private excludeInsertDelete(operation: DeleteOperation) {
-    if (checkLi(operation, this)) {
-      return recoverLi(operation, this);
+  private excludeInsertDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
+    if (checkLi(transformVector, originalVector)) {
+      return recoverLi(transformVector, originalVector);
     }
 
     let overlapType = intersectInsertExcludeDelete(this, operation);

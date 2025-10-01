@@ -7,6 +7,7 @@ import { StateVector } from '../../utils/state-vector/state-vector.class.ts';
 let savedOps = new DoubleMap();
 
 export function saveLi(originalOperation: Operation, transformOperation: StateVector, resultingOperation: StateVector) {
+  console.log('save li');
   savedOps.set(resultingOperation, transformOperation, originalOperation);
 }
 
@@ -15,6 +16,7 @@ export function checkLi(transformOperation: StateVector, resultingOperation: Sta
 }
 
 export function recoverLi(transformOperation: StateVector, resultingOperation: StateVector) {
+  console.log('recover li');
   return savedOps.get(resultingOperation, transformOperation);
 }
 
@@ -40,6 +42,7 @@ export function recoverRa(operation: Operation, baseOperation, resultingOperatio
 let savedIRelativeAddressing = new Map();
 
 export function saveIRa(resultingOperation: StateVector, originalOperation: Operation) {
+  console.log('save ira');
   savedIRelativeAddressing.set(resultingOperation, originalOperation);
 }
 
