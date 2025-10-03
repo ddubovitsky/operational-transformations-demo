@@ -66,7 +66,7 @@ export class DeleteOperation implements Operation {
   }
 
 
-  includeDeleteDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
+  includeDeleteDelete(operation: DeleteOperation, siteId: number, originalVector: StateVector, transformVector: StateVector) {
     let overlapType = intersectOperations(this, operation);
 
     const operationStartEnd = getOperationStartEnd(operation);
@@ -84,25 +84,25 @@ export class DeleteOperation implements Operation {
     const totalRange = totalDeleteEnd - position;
     const amount = totalRange - operation.getAmount();
     const result = new DeleteOperation(position, amount);
-    saveLi(this, originalVector, transformVector);
+    saveLi(siteId, this, originalVector, transformVector);
     return result;
   }
 
-  exclude(operation: Operation, originalSv: StateVector, transformSv: StateVector) {
+  exclude(operation: Operation, siteId: number, originalSv: StateVector, transformSv: StateVector) {
     if (operation instanceof InsertOperation) {
-      return this.excludeDeleteInsert(operation, originalSv, transformSv);
+      return this.excludeDeleteInsert(operation, siteId,originalSv, transformSv);
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.excludeDeleteDelete(operation, originalSv, transformSv);
+      return this.excludeDeleteDelete(operation, siteId, originalSv, transformSv);
     }
 
     throw 'Unexpected operation type exclude' + operation;
   }
 
-  excludeDeleteDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
-    if (checkLi(transformVector, originalVector)) {
-      return recoverLi(transformVector, originalVector);
+  excludeDeleteDelete(operation: DeleteOperation, siteId: number, originalVector: StateVector, transformVector: StateVector) {
+    if (checkLi(siteId,transformVector, originalVector)) {
+      return recoverLi(siteId,transformVector, originalVector);
     }
 
     const overlapType = intersectDeleteExcludeDeleteOperation(this, operation);
@@ -127,9 +127,9 @@ export class DeleteOperation implements Operation {
     }
   }
 
-  excludeDeleteInsert(operation: InsertOperation, originalSv: StateVector, transformSv: StateVector) {
-    if (checkLi(transformSv, originalSv)) {
-      return recoverLi(transformSv, originalSv);
+  excludeDeleteInsert(operation: InsertOperation, siteId: number, originalSv: StateVector, transformSv: StateVector) {
+    if (checkLi(siteId, transformSv, originalSv)) {
+      return recoverLi(siteId,transformSv, originalSv);
     }
     const overlapType = intersectOperations(this, operation);
 
@@ -168,7 +168,7 @@ export class DeleteOperation implements Operation {
     if (!result) {
       throw 'result should be present';
     }
-    saveRa(originalSv, transformSv);
+    saveRa(siteId, originalSv, transformSv);
     return result;
   }
 
@@ -178,7 +178,7 @@ export class DeleteOperation implements Operation {
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.includeDeleteDelete(operation, originalVector, transformVector);
+      return this.includeDeleteDelete(operation, originalSite, originalVector, transformVector);
     }
 
     throw 'Unexpected operation type ' + operation;

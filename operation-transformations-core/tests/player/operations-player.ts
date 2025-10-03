@@ -1,4 +1,3 @@
-
 // S1: site start
 // operations schedule notation
 // - skip
@@ -113,6 +112,8 @@ export enum SiteState {
 }
 
 export class OperationsPlayer {
+  storedOperations = {};
+
   playOperations(
     operationsPlayback: string,
     playLocalOperation: (siteId: string, operationId: string) => any,
@@ -146,6 +147,15 @@ export class OperationsPlayer {
 
         if (token.token === TokenType.Connect) {
           sitesState.set(site, SiteState.Connected);
+
+          if (this.storedOperations[site.siteId]?.length > 0) {
+            console.log('play remotes');
+            this.storedOperations[site.siteId].forEach((storedOperation) => {
+              playRemoteOperation(site.siteId, storedOperation);
+            });
+            this.storedOperations[site.siteId] = [];
+          }
+
           return;
         }
 
@@ -154,6 +164,11 @@ export class OperationsPlayer {
           sites.filter((it) => it != site).forEach((remoteSite) => {
             if (sitesState.get(remoteSite) === SiteState.Connected) {
               playRemoteOperation(remoteSite.siteId, timestamped);
+            } else {
+              const stored = this.storedOperations[remoteSite.siteId] || [];
+              stored.push(timestamped);
+              this.storedOperations[remoteSite.siteId] = stored;
+              console.log('store operation');
             }
           });
           return;

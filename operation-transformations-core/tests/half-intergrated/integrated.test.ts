@@ -164,4 +164,29 @@ describe('Integrated test', () => {
     assert.deepEqual(sites['S1'].produceResult(), 'letila skazala ochien porkhala');
     assert.deepEqual(sites['S2'].produceResult(), 'letila ochien porkhala');
   });
+
+  it('should correctly handle simultaneous insert at same position', () => {
+    const operations = {
+      '1': new InsertOperation(0, 'Hello'),
+      '2': new InsertOperation(0, 'World'),
+      '3': new InsertOperation(5, ' Beautiful '),
+      '4': new DeleteOperation(11, 4), // delete iful
+      '5': new InsertOperation(15, 'est'), // Beautifulest
+    };
+
+    new OperationsPlayer().playOperations(
+      `
+    S1:x1--o------4-----
+    S2:x-2---o-3-x---5--o-
+    `,
+      (site, operationId) => {
+        return sites[site].addLocalOperation(operations[operationId]);
+      }, (site, operation) => {
+        sites[site].addRemoteOperation(operation);
+      });
+
+
+    assert.deepEqual(sites['S1'].produceResult(), 'Hello Beautest World');
+    assert.deepEqual(sites['S2'].produceResult(), 'Hello Beautest World');
+  });
 });

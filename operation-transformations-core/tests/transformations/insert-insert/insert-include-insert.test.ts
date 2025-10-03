@@ -25,10 +25,10 @@ describe('Include insert in insert', (t) => {
     assert.deepEqual(transformed, new InsertOperation(3, '123'), );
   });
 
-  // it('Include insert overlaps in the insertion point 2', () => {
-  //   const operation = new InsertOperation(3, 'jkl');
-  //   const target = new InsertOperation(3, '123');
-  //   const transformed = target.include(operation, 2, 1);
-  //   assert.deepEqual(transformed, new InsertOperation(6, '123'), );
-  // });
+  it('Include insert overlaps in the insertion point 2', () => {
+    const operation = new InsertOperation(3, 'jkl');
+    const target = new InsertOperation(3, '123');
+    const transformed = target.include(operation, 2, 1);
+    assert.deepEqual(transformed, new InsertOperation(6, '123'), );
+  });
 });

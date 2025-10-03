@@ -17,12 +17,12 @@ export class TimestampedOperation {
     return this.vector.getSiteCounter(this.siteId) - operation.vector.getSiteCounter(operation.siteId);
   }
 
-  includeAll(operations: TimestampedOperation[]){
+  includeAll(operations: TimestampedOperation[]) {
     let operation: TimestampedOperation = this;
-    operations.forEach((it)=> {
+    operations.forEach((it) => {
       const before = operation;
       operation = operation.include(it);
-      console.log('include', before.operation.toString(),  it.operation.toString(), operation.operation.toString());
+      console.log('include', before.operation.toString(), it.operation.toString(), operation.operation.toString());
     });
     return operation;
   }
@@ -35,19 +35,19 @@ export class TimestampedOperation {
     );
   }
 
-  excludeAll(operations: TimestampedOperation[]){
+  excludeAll(operations: TimestampedOperation[]) {
     let operation: TimestampedOperation = this;
-    operations.forEach((it)=> {
+    operations.forEach((it) => {
       const before = operation;
       operation = operation.exclude(it);
-      console.log('exclude', before.operation.toString(),  it.operation.toString(), operation.operation.toString());
+      console.log('exclude', before.operation.toString(), it.operation.toString(), operation.operation.toString());
     });
     return operation;
   }
 
   exclude(operation: TimestampedOperation) {
     return new TimestampedOperation(
-      this.operation.exclude(operation.operation, this.vector, operation.vector),
+      this.operation.exclude(operation.operation, this.siteId, this.vector, operation.vector),
       this.vector,
       this.siteId,
     );

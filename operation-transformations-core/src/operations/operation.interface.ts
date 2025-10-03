@@ -4,7 +4,7 @@ import { TimestampedOperation } from './timestamped-operation.ts';
 export interface Operation {
   include(operation: Operation, originalSiteId?: number, operationSiteId?: number, originalSv?: StateVector, operationSv?: StateVector): Operation;
 
-  exclude(operation: Operation, originalSv?: StateVector, operationSv?: StateVector): Operation;
+  exclude(operation: Operation, originalSiteId?: number, originalSv?: StateVector, operationSv?: StateVector): Operation;
 
   timestamp(vector: StateVector, siteId: number): TimestampedOperation;
 

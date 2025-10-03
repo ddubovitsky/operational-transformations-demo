@@ -7,8 +7,8 @@ import { getOperationStartEnd } from './utils/operations-intersections.util.ts';
 import { saveLi } from './utils/operations-utilities.ts';
 
 export class JointDeleteOperation implements Operation {
-   readonly first: DeleteOperation;
-   readonly second: DeleteOperation;
+  readonly first: DeleteOperation;
+  readonly second: DeleteOperation;
 
   constructor(first: DeleteOperation, second: DeleteOperation) {
     this.first = first;
@@ -32,17 +32,17 @@ export class JointDeleteOperation implements Operation {
   }
 
 
-  includeDeleteOperation(deleteOperation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
+  includeDeleteOperation(deleteOperation: DeleteOperation, originalSiteId: number, originalVector: StateVector, transformVector: StateVector) {
     const first = this.first.include(deleteOperation);
     const second = this.second.include(deleteOperation);
 
 
     if (getOperationStartEnd(first).lengthDiff === 0) {
-      saveLi(this, transformVector, originalVector);
+      saveLi(originalSiteId, this, transformVector, originalVector);
       return second;
     }
     if (getOperationStartEnd(second).lengthDiff === 0) {
-      saveLi(this, transformVector, originalVector);
+      saveLi(originalSiteId, this, transformVector, originalVector);
       return first;
     }
 
@@ -51,9 +51,9 @@ export class JointDeleteOperation implements Operation {
     );
   }
 
-  include(operation: Operation, o: number, t: number, originalVector: StateVector, transformVector: StateVector): Operation {
+  include(operation: Operation, originalSiteId: number, t: number, originalVector: StateVector, transformVector: StateVector): Operation {
     if (operation instanceof DeleteOperation) {
-      return this.includeDeleteOperation(operation, originalVector, transformVector);
+      return this.includeDeleteOperation(operation, originalSiteId, originalVector, transformVector);
     }
 
     throw 'Joint Delete include insert not included';
@@ -102,8 +102,8 @@ export class JointDeleteOperation implements Operation {
     );
   }
 
-  toString(){
-    return '[Joined' + this.first.toString() + ' & ' + this.second.toString() +']'
+  toString() {
+    return '[Joined' + this.first.toString() + ' & ' + this.second.toString() + ']';
   }
 }
 

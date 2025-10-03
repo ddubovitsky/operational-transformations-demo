@@ -50,7 +50,7 @@ export class InsertOperation implements Operation {
 
 
   include(operation: Operation, originalSiteId?: number, operationSiteId?: number, originalSv?: StateVector, transformSv?: StateVector) {
-    if (getRa(originalSv)?.isEqual(transformSv)) {
+    if (getRa(operationSiteId, originalSv)?.isEqual(transformSv)) {
       console.log('restore', this.toString(), operation.toString());
       return this.moveRightBy(getOperationStartEnd(operation).start);
     }
@@ -70,27 +70,27 @@ export class InsertOperation implements Operation {
     throw 'include ' + operation.constructor.name + ' hot handled';
   }
 
-  exclude(operation: Operation, originalVector?: StateVector, transformSv?: StateVector) {
-    if (checkLi(transformSv, originalVector)) {
-      return recoverLi(transformSv, originalVector);
+  exclude(operation: Operation, originalSiteId: number, originalVector?: StateVector, transformSv?: StateVector) {
+    if (checkLi(originalSiteId, transformSv, originalVector)) {
+      return recoverLi(originalSiteId, transformSv, originalVector);
     }
 
     if (operation instanceof InsertOperation) {
-      return this.excludeInsertInsert(operation, originalVector, transformSv);
+      return this.excludeInsertInsert(operation, originalSiteId, originalVector, transformSv);
     }
 
     if (operation instanceof DeleteOperation) {
-      return this.excludeInsertDelete(operation, originalVector, transformSv);
+      return this.excludeInsertDelete(operation, originalSiteId, originalVector, transformSv);
     }
 
     if (operation instanceof JointDeleteOperation) {
-      return this.insertExcludeJointDelete(operation, originalVector, transformSv);
+      return this.insertExcludeJointDelete(operation, originalSiteId, originalVector, transformSv);
     }
 
     throw 'Unexpected Exclude';
   }
 
-  private insertExcludeJointDelete(operation: JointDeleteOperation, originalVector: StateVector, transformVector: StateVector) {
+  private insertExcludeJointDelete(operation: JointDeleteOperation, siteId: number, originalVector: StateVector, transformVector: StateVector) {
 
     if (operation.first.getPositionStart() > this.position) {
       return this.moveRightBy(0);
@@ -101,7 +101,7 @@ export class InsertOperation implements Operation {
       return this.moveRightBy((operation.first.getAmount() + operation.second.getAmount()));
     }
 
-    return this.excludeInsertDelete(operation.first, originalVector, transformVector).excludeInsertDelete(operation.second, originalVector, transformVector);
+    return this.excludeInsertDelete(operation.first, siteId, originalVector, transformVector).excludeInsertDelete(operation.second, originalVector, transformVector);
   }
 
   private moveRightBy(amount: number) {
@@ -121,10 +121,8 @@ export class InsertOperation implements Operation {
     }
 
 
-    if (getIra(originalVector)) { // for cases when initial include was to the right of this include, but undefined range happened
-      console.log('get ira');
-      const og: InsertOperation = getIra(originalVector);
-      console.log(og, og.position, operationStartEnd.start);
+    if (getIra(originalSiteId, originalVector)) { // for cases when initial include was to the right of this include, but undefined range happened
+      const og: InsertOperation = getIra(originalSiteId, originalVector);
       if (og.position > operationStartEnd.start) {
         return this.moveRightBy(operationStartEnd.lengthDiff);
       }
@@ -134,11 +132,13 @@ export class InsertOperation implements Operation {
     if (originalSiteId === operationSiteId) { // thats for sure
       return this.moveRightBy(0);
     }
-
+    if (originalSiteId > operationSiteId) {
+      return this.moveRightBy(operationStartEnd.lengthDiff);
+    }
     return this.moveRightBy(0);
   }
 
-  private excludeInsertInsert(operation: InsertOperation, operationSv: StateVector, transformSv: StateVector) {
+  private excludeInsertInsert(operation: InsertOperation, siteId: number, operationSv: StateVector, transformSv: StateVector) {
     const operationStartEnd = getOperationStartEnd(operation);
 
     if (this.position <= operation.position) {
@@ -151,7 +151,7 @@ export class InsertOperation implements Operation {
 
     const result = new InsertOperation(this.position - operation.position, this.insertString);
     console.log('%csave ra', 'color:red', operationSv, transformSv, operation);
-    saveRa(operationSv, transformSv);
+    saveRa(siteId, operationSv, transformSv);
     return result;
   }
 
@@ -175,7 +175,7 @@ export class InsertOperation implements Operation {
 
     if (overlapType === IntersectionType.OnTheLeft) {
       if (operationStartEnd.end === this.getPosition() && originalSiteId != transformSiteId) {
-        saveIRa(originalVector, this);
+        saveIRa(originalSiteId, originalVector, this);
       }
       return this.moveRightBy(operationStartEnd.lengthDiff);
     }
@@ -186,14 +186,14 @@ export class InsertOperation implements Operation {
 
     const position = operation.getPositionStart();
     const result = new InsertOperation(position, this.getInsertString());
-    saveLi(this, transformVector, originalVector);
-    saveIRa(originalVector, this);
+    saveLi(originalSiteId, this, transformVector, originalVector);
+    saveIRa(originalSiteId, originalVector, this);
     return result;
   }
 
-  private excludeInsertDelete(operation: DeleteOperation, originalVector: StateVector, transformVector: StateVector) {
-    if (checkLi(transformVector, originalVector)) {
-      return recoverLi(transformVector, originalVector);
+  private excludeInsertDelete(operation: DeleteOperation, siteId: number, originalVector: StateVector, transformVector: StateVector) {
+    if (checkLi(siteId, transformVector, originalVector)) {
+      return recoverLi(siteId, transformVector, originalVector);
     }
 
     let overlapType = intersectInsertExcludeDelete(this, operation);
