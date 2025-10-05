@@ -2,7 +2,7 @@ import { registerComponent, WebComponent } from '../web-utils/web-component/web-
 import { SiteComponent } from './site.component.ts';
 
 const templateString = `
-<div class="d-flex flex-row w-100">
+<div class="d-flex flex-row w-100 gap-5">
 <app-site id="site1" siteId="1"></app-site>
 <app-site id="site2" siteId="2"></app-site>
 </div>

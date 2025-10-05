@@ -1,16 +1,28 @@
 import { registerComponent, WebComponent } from '../web-utils/web-component/web-component';
-import { DeleteEvent, InputSampler, InsertEvent } from '../core/utils/input-sampler/input-sampler.class.ts';
+import { DeleteEvent, InputSampler, InsertEvent, InsertSampler } from '../core/utils/input-sampler/input-sampler.class.ts';
 import { Site } from '@operations-transformations-core/src/site/site.ts';
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
 
 const templateString = `
 <p id="state">on</p>
 <p id="result"></p>
-<textarea id="mainInput"></textarea>
+<div class="position-relative" style="border: 1px solid black">
+<div  style="font-size: 14px; width: 300px; height: 200px; z-index: 1; color: transparent; font-family: monospace"  id="highlightBackdrop"></div>
+<textarea class="border: none; position-absolute top-0 left-0" style="font-size: 14px;
+    font-family: monospace;
+    width: 300px;
+    height: 200px;
+    outline: none;
+    padding: 0;
+    z-index: 2;
+    background: transparent;
+    border: 0;
+    overflow: auto;"  id="mainInput"></textarea>
+</div>
+
 <div id="sampledEvents" class="d-flex flex-column"></div>
 
 <button id="togglestate">disconnect</button>
-
 `;
 
 export class SiteComponent extends WebComponent {
@@ -78,6 +90,7 @@ export class SiteComponent extends WebComponent {
       const currentSelection = [input.selectionStart, input.selectionEnd];
       if (event.inputType === 'insertText') {
         sampler.inputEvent(new InsertEvent(prevSelection[0]!, event.data!));
+        this.updateBackdrop(sampler);
       }
 
       if (event.inputType === 'deleteContentBackward') {
@@ -96,6 +109,24 @@ export class SiteComponent extends WebComponent {
     input.onblur = () => {
       sampler.unfocus();
     };
+  }
+
+  updateBackdrop(sampler: InputSampler) {
+    const backdrop = this.getById('highlightBackdrop')!;
+    const input = this.getById('mainInput') as HTMLInputElement;
+
+    if (sampler.eventSampler instanceof InsertSampler) {
+      const current = sampler.eventSampler.getCurrent();
+      const inputvalue = input.value!;
+      if (current) {
+        backdrop.innerHTML = '';
+        backdrop.innerHTML += inputvalue.substring(0, current.getPosition());
+        backdrop.innerHTML += `<span style="background: lawngreen">${inputvalue.substring(current.getPosition(), current.getPosition() + current.getInsertString().length)}</span>`;
+        backdrop.innerHTML += inputvalue.substring(current.getPosition() + current.getInsertString().length, inputvalue.length);
+      } else {
+        backdrop.innerHTML = '';
+      }
+    }
   }
 
   replayEvents() {

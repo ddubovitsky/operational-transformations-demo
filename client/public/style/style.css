@@ -1,0 +1,32 @@
+.d-flex {
+    display: flex;
+}
+
+.flex-row {
+    flex-direction: row;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.position-absolute {
+    position: absolute;
+}
+
+
+.position-relative {
+    position: relative;
+}
+
+.top-0 {
+    top: 0;
+}
+
+.left-0 {
+    left: 0;
+}
+
+.gap-5 {
+    gap: 3rem;
+}

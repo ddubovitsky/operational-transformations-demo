@@ -73,7 +73,7 @@ export class InputSampler {
   }
 }
 
-class InsertSampler implements Sampler {
+export class InsertSampler implements Sampler {
   public sampleEventType = SampleEventType.Insert;
 
   currentSamplingPosition: number | null = null;
