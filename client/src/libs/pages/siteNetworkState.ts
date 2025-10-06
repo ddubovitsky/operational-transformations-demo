@@ -16,6 +16,9 @@ export class SiteNetworkState {
 
   emitOperation$ = new Observable();
 
+  siteUpdated$ = new Observable();
+
+
   initSite(siteId: number) {
     this.site = new Site(siteId);
   }
@@ -37,6 +40,7 @@ export class SiteNetworkState {
       this.storedOutgoingEvents.push(op);
       return null;
     }
+
     const added = this.site.addLocalOperation(op);
     this.emitOperation$.next(added);
   }
@@ -46,7 +50,9 @@ export class SiteNetworkState {
       this.storedIncomingEvents.push(operation);
       return;
     }
+
     this.site.addRemoteOperation(operation);
+    this.siteUpdated$.next(this.site.produceResult());
   }
 
 }

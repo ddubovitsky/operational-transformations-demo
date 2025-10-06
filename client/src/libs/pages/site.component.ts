@@ -1,7 +1,8 @@
 import { registerComponent, WebComponent } from '../web-utils/web-component/web-component';
-import { DeleteEvent, InputSampler, InsertEvent, InsertSampler } from '../core/utils/input-sampler/input-sampler.class.ts';
-import { Site } from '@operations-transformations-core/src/site/site.ts';
+import { InputSampler, InsertSampler } from '../core/utils/input-sampler/input-sampler.class.ts';
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
+import { SiteNetworkState } from './siteNetworkState.ts';
+import { InputMapper } from './input-mapper.class.ts';
 
 const templateString = `
 <p id="state">on</p>
@@ -27,12 +28,8 @@ const templateString = `
 
 export class SiteComponent extends WebComponent {
 
-  site!: Site;
 
-  state = true;
-
-  storedOutgoingEvents: any[] = [];
-  storedIncomingEvents: any[] = [];
+  state = new SiteNetworkState();
 
   static register() {
     registerComponent({
@@ -45,70 +42,42 @@ export class SiteComponent extends WebComponent {
   connectedCallback() {
     super.connectedCallback();
 
-    this.getById('togglestate').onclick = () => {
-      this.state = !this.state;
-      if (this.state) {
-        this.reemitEvents();
-        this.replayEvents();
-        this.getById('state').textContent = 'on';
-        this.getById('togglestate').textContent = 'disconnect';
-      }
+    this.state.initSite(+this.getAttribute('siteId')!);
 
-      if (!this.state) {
-        this.getById('state').textContent = 'off';
-        this.getById('togglestate').textContent = 'connect';
-      }
-    };
-    this.site = new Site(+this.getAttribute('siteId')!);
-    // const sampledEvents = this.getById('sampledEvents');
     const sampler = new InputSampler();
+    const inputMapper = new InputMapper(this.getById('mainInput')! as HTMLInputElement);
 
-    sampler.sampled$.subscribe({
-      next: (sampledEvent: any) => {
-        // sampledEvents!.textContent += (`${
-        //   JSON.stringify(sampledEvent)
-        // }`);
-        if (!sampledEvent) {
+    inputMapper.events$.subscribe({
+      next: (it: any) => {
+        if (it === null) {
+          sampler.unfocus();
           return;
         }
-        this.emitRemoteEvent(this.site.addLocalOperation(sampledEvent));
-        this.getById('result')!.innerText = this.site.produceResult();
+        sampler.inputEvent(it);
+        this.updateBackdrop(sampler);
       },
     });
 
-    let prevValue: string | null = null;
-    const input = this.getById('mainInput') as HTMLInputElement;
+    sampler.sampled$.subscribe({
+      next: (sampledEvent: any) => {
+        if (!sampledEvent) {
+          return;
+        }
+        this.state.addLocalOperation(sampledEvent);
+      },
+    });
 
+    this.state.emitOperation$.subscribe({
+      next: (it: any) => {
+        this.emitRemoteEvent(it);
+      },
+    });
 
-    let prevSelection: [number, number] | any = null;
-    input.onbeforeinput = () => {
-      prevSelection = [input.selectionStart, input.selectionEnd];
-      prevValue = input.value;
-    };
-
-    (input!.oninput as any) = (event: InputEvent) => {
-      const currentSelection = [input.selectionStart, input.selectionEnd];
-      if (event.inputType === 'insertText') {
-        sampler.inputEvent(new InsertEvent(prevSelection[0]!, event.data!));
-        this.updateBackdrop(sampler);
-      }
-
-      if (event.inputType === 'deleteContentBackward') {
-        sampler.inputEvent(new DeleteEvent(currentSelection[0]!, prevSelection[1]! - currentSelection[1]!, prevValue!.substring(prevSelection[1]!, currentSelection[1]!)));
-      }
-
-      if (event.inputType === 'insertFromPaste') {
-
-      }
-
-      if (event.inputType === 'insertReplacementText') {
-
-      }
-    };
-
-    input.onblur = () => {
-      sampler.unfocus();
-    };
+    this.state.siteUpdated$.subscribe(({
+      next: (it: any) => {
+        (this.getById('mainInput')! as HTMLInputElement).value = it;
+      },
+    }));
   }
 
   updateBackdrop(sampler: InputSampler) {
@@ -129,34 +98,11 @@ export class SiteComponent extends WebComponent {
     }
   }
 
-  replayEvents() {
-    this.storedIncomingEvents.forEach((it) => this.remoteEvent(it));
-    this.storedIncomingEvents = [];
-
-  }
-
-  reemitEvents() {
-    this.storedOutgoingEvents.forEach((event) => this.emitRemoteEvent(event));
-    this.storedOutgoingEvents = [];
-  }
-
   remoteEvent(event: TimestampedOperation) {
-    if (!this.state) {
-      this.storedIncomingEvents.push(event);
-      return;
-    }
-
-    this.site.addRemoteOperation(event);
-    this.getById('result')!.innerText = this.site.produceResult();
-    (this.getById('mainInput') as HTMLInputElement)!.value = this.site.produceResult();
+    this.state.addRemoteOperation(event);
   }
 
   emitRemoteEvent(event: TimestampedOperation) {
-    if (!this.state) {
-      this.storedOutgoingEvents.push(event);
-      return;
-    }
-
     this.dispatchEvent(new CustomEvent('remoteEvent', {
       detail: event,
     }));
