@@ -53,7 +53,6 @@ export class OperationTransformStrategy {
     const originalOperations: TimestampedOperation[] = [];
     while (listOfDependentOperations.length > 0) {
       const dependentOperation = listOfDependentOperations.shift();
-      debugger;
       const operationsPrecedingCurrent =
         listOfOperations.slice(0, listOfOperations.indexOf(dependentOperation))
           .reverse();

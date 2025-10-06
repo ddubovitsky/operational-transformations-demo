@@ -27,12 +27,16 @@ export class OperationsBufferedFilter {
 
   private pendingOperations = new PendingOperations();
 
+  public onOperationStored: Function;
+  public onOperationRemoved: Function;
+
   addAndExecutePending(
     operation: TimestampedOperation,
     currentStateVector: StateVector,
     executeOperation: (operation: TimestampedOperation) => StateVector,
   ) {
     if (!this.strategy.canExecuteOperation(currentStateVector, operation.vector, operation.siteId)) {
+      this.onOperationStored?.(operation);
       this.pendingOperations.storeOperation(operation);
       return;
     }
@@ -42,6 +46,7 @@ export class OperationsBufferedFilter {
     for (const storedOperation of this.pendingOperations.getOperationsList()) {
       if (this.strategy.canExecuteOperation(newStateVector, storedOperation.vector, storedOperation.siteId)) {
         this.pendingOperations.removeOperation(storedOperation);
+        this.onOperationRemoved?.(storedOperation);
         newStateVector = executeOperation(storedOperation);
       }
     }
