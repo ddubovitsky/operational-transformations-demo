@@ -1,6 +1,6 @@
 import { Site } from '@operations-transformations-core/src/site/site.ts';
 import { Operation } from '@operations-transformations-core/src/operations/operation.interface.ts';
-import { Observable } from '../web-utils/reactivity/observable';
+import { Observable } from '../../../web-utils/reactivity/observable';
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
 
 export class SiteNetworkState {

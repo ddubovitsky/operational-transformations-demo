@@ -1,8 +1,8 @@
-import { registerComponent, WebComponent } from '../web-utils/web-component/web-component';
-import { InputSampler, InsertSampler } from '../core/utils/input-sampler/input-sampler.class.ts';
+import { registerComponent, WebComponent } from '../../web-utils/web-component/web-component';
+import { DeleteSampler, InputSampler, InsertSampler, Sampler } from '../../core/utils/input-sampler/input-sampler.class.ts';
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
-import { SiteNetworkState } from './siteNetworkState.ts';
-import { InputMapper } from './input-mapper.class.ts';
+import { SiteNetworkState } from './site-network/siteNetworkState.ts';
+import { InputMapper } from './util/input-mapper.class.ts';
 
 const templateString = `
 <p id="state">on</p>
@@ -51,6 +51,7 @@ export class SiteComponent extends WebComponent {
       next: (it: any) => {
         if (it === null) {
           sampler.unfocus();
+          // this.updateBackdrop(sampler);
           return;
         }
         sampler.inputEvent(it);
@@ -82,23 +83,14 @@ export class SiteComponent extends WebComponent {
 
   updateBackdrop(sampler: InputSampler) {
     const backdrop = this.getById('highlightBackdrop')!;
-    const input = this.getById('mainInput') as HTMLInputElement;
-
-    if (sampler.eventSampler instanceof InsertSampler) {
-      const current = sampler.eventSampler.getCurrent();
-      const inputvalue = input.value!;
-      if (current) {
-        backdrop.innerHTML = '';
-        backdrop.innerHTML += inputvalue.substring(0, current.getPosition());
-        backdrop.innerHTML += `<span style="background: lawngreen">${inputvalue.substring(current.getPosition(), current.getPosition() + current.getInsertString().length)}</span>`;
-        backdrop.innerHTML += inputvalue.substring(current.getPosition() + current.getInsertString().length, inputvalue.length);
-      } else {
-        backdrop.innerHTML = '';
-      }
-    }
+    backdrop.innerHTML = createBackdropContent(
+      sampler.eventSampler!,
+      (this.getById('mainInput') as HTMLInputElement).value,
+      (backdrop as HTMLDivElement)!,
+    );
   }
 
-  remoteEvent(event: TimestampedOperation) {
+  onRemoteEvent(event: TimestampedOperation) {
     this.state.addRemoteOperation(event);
   }
 
@@ -107,4 +99,33 @@ export class SiteComponent extends WebComponent {
       detail: event,
     }));
   }
+}
+
+function createBackdropContent(sampler: Sampler, inputvalue: string, div: HTMLDivElement): string {
+  let content = '';
+  if (sampler instanceof InsertSampler) {
+    const current = sampler.getCurrent();
+    if (current) {
+      content = '';
+      content += inputvalue.substring(0, current.getPosition());
+      content += `<span style="background: lawngreen">${inputvalue.substring(current.getPosition(), current.getPosition() + current.getInsertString().length)}</span>`;
+      content += inputvalue.substring(current.getPosition() + current.getInsertString().length, inputvalue.length);
+    } else {
+      content = '';
+    }
+  }
+
+  if (sampler instanceof DeleteSampler) {
+    const current = sampler.getCurrent();
+    if (current) {
+      content = '';
+      content += inputvalue.substring(0, current.getPositionStart());
+      content += `<span currentString="${sampler.currentRemoveString}" class="delete-span" style="background: #FF4B4B; display: inline-block;width: 2px;height: 1rem;"></span>`;
+      content += inputvalue.substring(current.getPositionStart(), inputvalue.length);
+    } else {
+      content = '';
+    }
+  }
+
+  return content;
 }

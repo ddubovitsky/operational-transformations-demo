@@ -1,5 +1,5 @@
-import { Observable } from '../web-utils/reactivity/observable';
-import { DeleteEvent, InsertEvent } from '../core/utils/input-sampler/input-sampler.class.ts';
+import { Observable } from '../../../web-utils/reactivity/observable';
+import { DeleteEvent, InsertEvent } from '../../../core/utils/input-sampler/input-sampler.class.ts';
 
 export class InputMapper {
 
@@ -24,6 +24,10 @@ export class InputMapper {
       }
 
       if (event.inputType === 'deleteContentBackward') {
+        this.events$.next(new DeleteEvent(currentSelection[0]!, prevSelection[1]! - currentSelection[1]!, prevValue!.substring(prevSelection[1]!, currentSelection[1]!)));
+      }
+
+      if (event.inputType === 'deleteWordBackward') {
         this.events$.next(new DeleteEvent(currentSelection[0]!, prevSelection[1]! - currentSelection[1]!, prevValue!.substring(prevSelection[1]!, currentSelection[1]!)));
       }
 

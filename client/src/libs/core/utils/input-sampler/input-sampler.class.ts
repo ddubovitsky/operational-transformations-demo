@@ -9,7 +9,7 @@ enum SampleEventType {
 
 type Operation = InsertOperation | DeleteOperation;
 
-interface Sampler {
+export interface Sampler {
   sampleEventType: SampleEventType;
 
   inputEvent(event: DeleteEvent | InsertEvent): Operation | Operation[] | null;
@@ -124,12 +124,13 @@ export class InsertSampler implements Sampler {
 }
 
 
-class DeleteSampler implements Sampler {
+export class DeleteSampler implements Sampler {
   public sampleEventType = SampleEventType.Delete;
 
 
   currentSamplingPosition: number | null = null;
   currentDeleteCounter: number | null = null;
+  currentRemoveString: string | null = null;
 
   inputEvent(event: DeleteEvent): DeleteOperation | DeleteOperation[] | null {
     console.log('delete sampler here');
@@ -152,9 +153,10 @@ class DeleteSampler implements Sampler {
     const isPreviousCharacter = event.position + event.amount === (this.currentSamplingPosition);
     const isEmptySpace = event.deleteString === ' ';
     if (isPreviousCharacter) {
+      this.currentRemoveString = (event.deleteString || '') + this.currentRemoveString;
       this.currentDeleteCounter! += event.amount;
       this.currentSamplingPosition = event.position;
-      if (isEmptySpace) {
+      if (isEmptySpace || this.currentSamplingPosition === 0) {
         const operation = this.getCurrent();
         this.clear();
         return operation;
@@ -171,6 +173,7 @@ class DeleteSampler implements Sampler {
 
   private beginSampling(event: DeleteEvent) {
     this.currentSamplingPosition = event.position;
+    this.currentRemoveString = event.deleteString!;
     this.currentDeleteCounter = 1;
   }
 

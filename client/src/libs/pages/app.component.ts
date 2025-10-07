@@ -1,5 +1,5 @@
 import { registerComponent, WebComponent } from '../web-utils/web-component/web-component';
-import { SiteComponent } from './site.component.ts';
+import { SiteComponent } from './site/site.component.ts';
 
 const templateString = `
 <div class="d-flex flex-row w-100 gap-5">
@@ -27,7 +27,7 @@ export class AppComponent extends WebComponent {
       it?.addEventListener('remoteEvent', (event) => {
         sites.forEach((otherSite) => {
           if (otherSite !== it) {
-            (otherSite as SiteComponent).remoteEvent((event as CustomEvent).detail);
+            (otherSite as SiteComponent).onRemoteEvent((event as CustomEvent).detail);
           }
         });
       });

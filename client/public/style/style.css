@@ -30,3 +30,23 @@
 .gap-5 {
     gap: 3rem;
 }
+
+
+.delete-span {
+    transform: translateX(-50%);
+    position: relative;
+    z-index: 4;
+}
+
+.delete-span::after {
+    content: attr(currentString);
+    transform: translateY(-1.5rem) translateX(calc(-50% + 1px));
+    background: #FF4B4B;
+    padding: 4px 8px;
+    color: black;
+    display: inline-block;
+    height: 1rem;
+    position: relative;
+    z-index: 3;
+    clip-path: polygon(100% 0%, 0% 0%, 0% 85%, 48% 100%, 52% 100%, 100% 85%);
+}

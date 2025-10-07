@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import { DeleteEvent, InputSampler, InsertEvent } from './input-sampler.class.ts';
+import { DeleteEvent, DeleteSampler, InputSampler, InsertEvent } from './input-sampler.class.ts';
 import * as assert from 'node:assert';
 import { InsertOperation } from '@operations-transformations-core/src/operations/insert.operation.ts';
 import { DeleteOperation } from '@operations-transformations-core/src/operations/delete.operation.ts';
@@ -64,11 +64,12 @@ describe('it', () => {
       },
     });
 
-    sampler.inputEvent(new DeleteEvent(6, 1));
-    sampler.inputEvent(new DeleteEvent(5, 1));
-    sampler.inputEvent(new DeleteEvent(4, 1));
-    sampler.inputEvent(new DeleteEvent(3, 1));
-    sampler.inputEvent(new DeleteEvent(2, 1));
+    sampler.inputEvent(new DeleteEvent(6, 1, 's'));
+    sampler.inputEvent(new DeleteEvent(5, 1, 'i'));
+    sampler.inputEvent(new DeleteEvent(4, 1,'n'));
+    sampler.inputEvent(new DeleteEvent(3, 1, 'e'));
+    sampler.inputEvent(new DeleteEvent(2, 1,'d'));
+    assert.deepEqual((sampler.eventSampler as DeleteSampler).currentRemoveString , 'denis');
     sampler.inputEvent(new DeleteEvent(1, 1));
     sampler.inputEvent(new InsertEvent(1, 'helow'));
     sampler.inputEvent(new DeleteEvent(1, 1));
@@ -80,6 +81,32 @@ describe('it', () => {
       new InsertOperation(1, 'helow'),
       new DeleteOperation(1, 1),
       new DeleteOperation(3, 1),
+    ]);
+
+    sub.unsubscribe();
+  });
+
+  it('should sample consecutive deletes if reached end', () => {
+    const sampler = new InputSampler();
+    //
+    const sampledEvents: any[] = [];
+    const sub = sampler.sampled$.subscribe({
+      next: (it: any) => {
+        sampledEvents.push(it);
+      },
+    });
+
+    sampler.inputEvent(new DeleteEvent(6, 1, 's'));
+    sampler.inputEvent(new DeleteEvent(5, 1, 'i'));
+    sampler.inputEvent(new DeleteEvent(4, 1,'n'));
+    sampler.inputEvent(new DeleteEvent(3, 1, 'e'));
+    sampler.inputEvent(new DeleteEvent(2, 1,'d'));
+    assert.deepEqual((sampler.eventSampler as DeleteSampler).currentRemoveString , 'denis');
+    sampler.inputEvent(new DeleteEvent(1, 1));
+    sampler.inputEvent(new DeleteEvent(0, 1));
+
+    assert.deepEqual(sampledEvents, [
+      new DeleteOperation(0, 7),
     ]);
 
     sub.unsubscribe();
@@ -123,9 +150,10 @@ describe('it', () => {
     });
 
 
-    sampler.inputEvent(new DeleteEvent(6, 1));
-    sampler.inputEvent(new DeleteEvent(5, 1));
-    sampler.inputEvent(new DeleteEvent(2, 3));
+    sampler.inputEvent(new DeleteEvent(6, 1,'r'));
+    sampler.inputEvent(new DeleteEvent(5, 1, 'a'));
+    assert.deepEqual((sampler.eventSampler as DeleteSampler).currentRemoveString , 'ar');
+    sampler.inputEvent(new DeleteEvent(2, 3, 'hop'));
 
     assert.deepEqual(sampledEvents, [
       new DeleteOperation(5, 2),
