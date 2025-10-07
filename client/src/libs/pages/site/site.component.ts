@@ -146,7 +146,6 @@ export class SiteComponent extends WebComponent {
     backdrop.innerHTML = createBackdropContent(
       sampler.eventSampler!,
       (this.getById('mainInput') as HTMLInputElement).value,
-      (backdrop as HTMLDivElement)!,
     );
   }
 
@@ -161,7 +160,7 @@ export class SiteComponent extends WebComponent {
   }
 }
 
-function createBackdropContent(sampler: Sampler, inputvalue: string, div: HTMLDivElement): string {
+function createBackdropContent(sampler: Sampler, inputvalue: string): string {
   let content = '';
   if (sampler instanceof InsertSampler) {
     const current = sampler.getCurrent();
