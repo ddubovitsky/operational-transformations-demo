@@ -50,3 +50,8 @@
     z-index: 3;
     clip-path: polygon(100% 0%, 0% 0%, 0% 85%, 48% 100%, 52% 100%, 100% 85%);
 }
+
+.operation-div {
+    background-color: grey;
+    color: black;
+}

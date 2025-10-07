@@ -3,9 +3,25 @@ import { DeleteSampler, InputSampler, InsertSampler, Sampler } from '../../core/
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
 import { SiteNetworkState } from './site-network/siteNetworkState.ts';
 import { InputMapper } from './util/input-mapper.class.ts';
+import { AnimationsPlayer } from './animations-player/animations-player.ts';
+import { Operation } from '@operations-transformations-core/src/operations/operation.interface.ts';
 
 const templateString = `
-<p id="state">on</p>
+
+<div>
+<p bind-if="connected" id="state">on</p>
+<p bind-if="notConnected">off</p>
+</div>
+
+
+<div class="d-flex flex-column gap-5">
+<div id="incoming" class="operation-div">incoming</div>
+<div class="d-flex flex-row gap-5">
+<div id="pending" class="operation-div">pending</div>
+<div id="preconditions" class="operation-div">preconditions</div>
+<div id="transform" class="operation-div">transform</div>
+</div>
+</div>
 <p id="result"></p>
 <div class="position-relative" style="border: 1px solid black">
 <div  style="font-size: 14px; width: 300px; height: 200px; z-index: 1; color: transparent; font-family: monospace"  id="highlightBackdrop"></div>
@@ -29,7 +45,8 @@ const templateString = `
 export class SiteComponent extends WebComponent {
 
 
-  state = new SiteNetworkState();
+  networkState = new SiteNetworkState();
+  state = this.networkState.state;
 
   static register() {
     registerComponent({
@@ -42,7 +59,10 @@ export class SiteComponent extends WebComponent {
   connectedCallback() {
     super.connectedCallback();
 
-    this.state.initSite(+this.getAttribute('siteId')!);
+    this.getById('togglestate')!.onclick = () => {
+      this.networkState.toggleConnectivity(!this.state.connected);
+    };
+    this.networkState.initSite(+this.getAttribute('siteId')!);
 
     const sampler = new InputSampler();
     const inputMapper = new InputMapper(this.getById('mainInput')! as HTMLInputElement);
@@ -51,7 +71,7 @@ export class SiteComponent extends WebComponent {
       next: (it: any) => {
         if (it === null) {
           sampler.unfocus();
-          // this.updateBackdrop(sampler);
+          this.updateBackdrop(sampler);
           return;
         }
         sampler.inputEvent(it);
@@ -64,21 +84,61 @@ export class SiteComponent extends WebComponent {
         if (!sampledEvent) {
           return;
         }
-        this.state.addLocalOperation(sampledEvent);
+        this.networkState.addLocalOperation(sampledEvent);
       },
     });
 
-    this.state.emitOperation$.subscribe({
+    this.networkState.emitOperation$.subscribe({
       next: (it: any) => {
         this.emitRemoteEvent(it);
       },
     });
 
-    this.state.siteUpdated$.subscribe(({
+    this.networkState.siteUpdated$.subscribe(({
       next: (it: any) => {
-        (this.getById('mainInput')! as HTMLInputElement).value = it;
+        // (this.getById('mainInput')! as HTMLInputElement).value = it;
       },
     }));
+
+
+    const player = new AnimationsPlayer({
+      playReceived: (operation: Operation) => {
+        return animateScale(
+          this.getById('incoming')!,
+        );
+      },
+      playPreconditions: (operation: Operation) => {
+        return animateScale(
+          this.getById('preconditions')!,
+        );
+      },
+      playStored: (operation: Operation) => {
+        return animateScale(
+          this.getById('pending')!,
+        );
+      },
+      playUnstored: (operation: Operation) => {
+        return animateScale(
+          this.getById('pending')!,
+        );
+      },
+      playTransform: (operation: Operation) => {
+        return animateScale(
+          this.getById('transform')!,
+        );
+      },
+      playApply: (operation: Operation, result: string) => {
+        (this.getById('mainInput')! as HTMLInputElement).value = result;
+        return Promise.resolve();
+      },
+    });
+
+    this.networkState.events$.subscribe({
+      next: (newEvents) => {
+        player.playEvents(newEvents);
+      },
+    });
+
   }
 
   updateBackdrop(sampler: InputSampler) {
@@ -91,7 +151,7 @@ export class SiteComponent extends WebComponent {
   }
 
   onRemoteEvent(event: TimestampedOperation) {
-    this.state.addRemoteOperation(event);
+    this.networkState.addRemoteOperation(event);
   }
 
   emitRemoteEvent(event: TimestampedOperation) {
@@ -128,4 +188,22 @@ function createBackdropContent(sampler: Sampler, inputvalue: string, div: HTMLDi
   }
 
   return content;
+}
+
+function animateScale(element: HTMLElement, scale = 1.2, duration = 300): Promise<void> {
+  return new Promise((resolve) => {
+    const animation = element.animate(
+      [
+        { transform: 'scale(1)', offset: 0 },
+        { transform: `scale(${scale})`, offset: 0.5 },
+        { transform: 'scale(1)', offset: 1 },
+      ],
+      {
+        duration,
+        easing: 'ease-in-out',
+      },
+    );
+
+    animation.onfinish = () => resolve();
+  });
 }
