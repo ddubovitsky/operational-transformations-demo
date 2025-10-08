@@ -16,9 +16,19 @@ const templateString = `
 
 <div class="d-flex flex-column gap-5">
 <div id="incoming" class="operation-div">incoming</div>
+<div class="position-relative">
+    <img class="position-absolute top-0 left-0" src="/images/arrow-down-solid-full.svg"> 
+    <img style="opacity: 0" id="arrowIncomingConditions" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg"> 
+</div>
 <div class="d-flex flex-row gap-5">
 <div id="pending" class="operation-div">pending</div>
 <div id="preconditions" class="operation-div">preconditions</div>
+
+<div class="position-relative">
+    <img class="position-absolute top-0 left-0" src="/images/arrow-right-solid-full.svg"> 
+    <img style="opacity: 0" id="arrowConditionsTransform" class="position-absolute top-0 left-0" src="/images/arrow-right-solid-green.svg"> 
+</div>
+
 <div id="transform" class="operation-div">transform</div>
 </div>
 </div>
@@ -108,9 +118,11 @@ export class SiteComponent extends WebComponent {
         );
       },
       playPreconditions: (operation: Operation) => {
-        return animateScale(
-          this.getById('preconditions')!,
-        );
+        return animateRevealFromTop(this.getById('arrowIncomingConditions')!).then(() => {
+          return animateScale(
+            this.getById('preconditions')!,
+          );
+        });
       },
       playStored: (operation: Operation) => {
         return animateScale(
@@ -123,9 +135,12 @@ export class SiteComponent extends WebComponent {
         );
       },
       playTransform: (operation: Operation) => {
-        return animateScale(
-          this.getById('transform')!,
-        );
+        return animateRevealFromLeft(this.getById('arrowConditionsTransform')!).then(() => {
+          return animateScale(
+            this.getById('transform')!,
+          );
+        });
+
       },
       playApply: (operation: Operation, result: string) => {
         (this.getById('mainInput')! as HTMLInputElement).value = result;
@@ -204,5 +219,54 @@ function animateScale(element: HTMLElement, scale = 1.2, duration = 300): Promis
     );
 
     animation.onfinish = () => resolve();
+  });
+}
+
+function animateRevealFromLeft(element: HTMLElement, duration = 200) {
+  return new Promise((resolve) => {
+    // Ensure element is visible and clipping is enabled
+    element.style.opacity = 1 + '';
+
+    const animation = element.animate(
+      [
+        { clipPath: 'inset(0 100% 0 0)' }, // Fully hidden (covered from right)
+        { clipPath: 'inset(0 0% 0 0)', offset: 1 },
+      ],
+      {
+        duration: duration,
+        easing: 'ease-out',
+        fill: 'forwards',
+      },
+    );
+
+    animation.onfinish = () => {
+      element.style.opacity = 0 + '';
+      resolve(true);
+    };
+  });
+}
+
+
+function animateRevealFromTop(element: HTMLElement, duration = 200) {
+  return new Promise((resolve) => {
+    // Ensure element is visible and clipping is enabled
+    element.style.opacity = 1 + '';
+
+    const animation = element.animate(
+      [
+        { clipPath: 'inset(0 0 100% 0)' },
+        { clipPath: 'inset(0 0 0% 0)', offset: 1 },
+      ],
+      {
+        duration: duration,
+        easing: 'ease-out',
+        fill: 'forwards',
+      },
+    );
+
+    animation.onfinish = () => {
+      element.style.opacity = 0 + '';
+      resolve(true);
+    };
   });
 }
