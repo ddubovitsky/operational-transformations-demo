@@ -94,7 +94,7 @@ const templateString = `
    <div class="position-absolute" style="left: 384px;top: 58px;">
       <div class="position-relative">
          <img class="position-absolute top-0 left-0" src="/images/arrow-down-solid-full.svg">
-         <img style="opacity: 0" id="arrowIncomingConditions" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg">
+         <img style="opacity: 0" id="arrowApply" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg">
       </div>
    </div>
    
@@ -198,8 +198,10 @@ export class SiteComponent extends WebComponent {
 
       },
       playApply: (operation: Operation, result: string) => {
-        (this.getById('mainInput')! as HTMLInputElement).value = result;
-        return Promise.resolve();
+        return animateRevealFromTop(this.getById('arrowApply')!).then(() => {
+          (this.getById('mainInput')! as HTMLInputElement).value = result;
+          return Promise.resolve();
+        });
       },
     });
 
