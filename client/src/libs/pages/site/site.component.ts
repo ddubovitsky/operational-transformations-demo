@@ -7,35 +7,70 @@ import { AnimationsPlayer } from './animations-player/animations-player.ts';
 import { Operation } from '@operations-transformations-core/src/operations/operation.interface.ts';
 
 const templateString = `
+<style>
 
-<div>
-<p bind-if="connected" id="state">on</p>
-<p bind-if="notConnected">off</p>
+.step {
+background: #B6B6B6;
+border: 1px solid #979797;
+padding: 8px 16px;
+border-radius: 40px;
+font-size: 20px;
+font-weight: bold;
+}
+
+.socket-block {
+border: 1px solid #979797;
+padding: 8px 12px;
+font-size: 20px;
+background: #D8D8D8;
+font-weight: bold;
+}
+    .main-container {
+        border-top-left-radius: 0;
+      }
+     
+      .top-container {
+      border-bottom: 1px solid var(--ch-gray);
+      margin-bottom: -1px;
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+      }
+</style>
+<div class="d-flex flex-row ">
+    <div class="gap-2 bg-gray border-black rounded-1 top-container d-flex flex-row p-3">
+    <p class="m-0" bind-text="siteName"></p>
+        <p class="m-0" bind-if="connected" id="state">online</p>
+        <p class="m-0" bind-if="notConnected">offline</p>
+
+        <button id="togglestate">toggle</button>
+    </div>
+    <div class="flex-fill top-container-ghost d-flex flex-row align-items-end justify-content-between">
+        <div id="incoming" class="d-inline-block socket-block ms-2 rounded-1 mb-2">IN: 3</div>
+         <div id="incoming" class="d-inline-block socket-block rounded-1 mb-2">OUT: 3</div>
+    </div>
 </div>
 
-
-<div class="d-flex flex-column gap-5">
-<div id="incoming" class="operation-div">incoming</div>
-<div class="position-relative">
-    <img class="position-absolute top-0 left-0" src="/images/arrow-down-solid-full.svg"> 
-    <img style="opacity: 0" id="arrowIncomingConditions" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg"> 
 </div>
-<div class="d-flex flex-row gap-5">
-<div id="pending" class="operation-div">pending</div>
-<div id="preconditions" class="operation-div">preconditions</div>
-
-<div class="position-relative">
-    <img class="position-absolute top-0 left-0" src="/images/arrow-right-solid-full.svg"> 
-    <img style="opacity: 0" id="arrowConditionsTransform" class="position-absolute top-0 left-0" src="/images/arrow-right-solid-green.svg"> 
-</div>
-
-<div id="transform" class="operation-div">transform</div>
-</div>
-</div>
-<p id="result"></p>
-<div class="position-relative" style="border: 1px solid black">
-<div  style="font-size: 14px; width: 300px; height: 200px; z-index: 1; color: transparent; font-family: monospace"  id="highlightBackdrop"></div>
-<textarea class="border: none; position-absolute top-0 left-0" style="font-size: 14px;
+<div class="bg-gray border-black rounded-1 p-3 main-container">
+    <div class="d-flex flex-column gap-5">
+        <div class="position-relative">
+            <img class="position-absolute top-0 left-0" src="/images/arrow-down-solid-full.svg">
+            <img style="opacity: 0" id="arrowIncomingConditions" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg">
+        </div>
+        <div class="d-flex flex-row gap-5">
+            <div id="pending" class="step">pending</div>
+            <div id="preconditions" class="step">preconditions</div>
+            <div class="position-relative">
+                <img class="position-absolute top-0 left-0" src="/images/arrow-right-solid-full.svg">
+                <img style="opacity: 0" id="arrowConditionsTransform" class="position-absolute top-0 left-0" src="/images/arrow-right-solid-green.svg">
+            </div>
+            <div id="transform" class="step">transform</div>
+        </div>
+    </div>
+    <p id="result"></p>
+    <div class="position-relative" style="border: 1px solid black">
+        <div style="font-size: 14px; width: 400px; height: 200px; z-index: 1; background: white; color: transparent; font-family: monospace" id="highlightBackdrop"></div>
+        <textarea class="border: none; position-absolute top-0 left-0" style="font-size: 14px;
     font-family: monospace;
     width: 300px;
     height: 200px;
@@ -44,12 +79,10 @@ const templateString = `
     z-index: 2;
     background: transparent;
     border: 0;
-    overflow: auto;"  id="mainInput"></textarea>
+    overflow: auto;" id="mainInput"></textarea>
+    </div>
+    <div id="sampledEvents" class="d-flex flex-column"></div>
 </div>
-
-<div id="sampledEvents" class="d-flex flex-column"></div>
-
-<button id="togglestate">disconnect</button>
 `;
 
 export class SiteComponent extends WebComponent {

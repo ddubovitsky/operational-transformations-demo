@@ -10,6 +10,7 @@ export class SiteNetworkState {
   site!: Site;
 
   state = proxyViewBound({
+    siteName: '',
     connected: true,
     notConnected: false,
   });
@@ -25,6 +26,7 @@ export class SiteNetworkState {
 
 
   initSite(siteId: number) {
+    this.state.siteName = 'Site ' + siteId;
     this.site = new Site(siteId);
   }
 
