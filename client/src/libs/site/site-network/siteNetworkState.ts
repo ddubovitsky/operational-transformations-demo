@@ -1,9 +1,9 @@
 import { Site } from '@operations-transformations-core/src/site/site.ts';
 import { Operation } from '@operations-transformations-core/src/operations/operation.interface.ts';
-import { Observable } from '../../../web-utils/reactivity/observable';
+import { Observable } from '../../web-utils/reactivity/observable';
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
 import { EventType, OperationFrame } from '../animations-player/animations-player.ts';
-import { proxyViewBound } from '../../../web-utils/reactivity/signal-ui-bound';
+import { proxyViewBound } from '../../web-utils/reactivity/signal-ui-bound';
 
 export class SiteNetworkState {
 

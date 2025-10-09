@@ -13,6 +13,16 @@
     font-style: normal;
 }
 
+.text-roman {
+    font-family: "Times New Roman", serif;
+}
+
+
+.text-center {
+    text-align: center;
+}
+
+
 
 body {
     font-family: Roboto, sans-serif;
@@ -22,6 +32,7 @@ body {
 
 
 * {
+    line-height: 1.6;
     font-family: Roboto, sans-serif;
     --ch-primary: #153499;
     --ch-secondary: #526a80;
@@ -29,7 +40,7 @@ body {
     --ch-white: #FFFFFF;
     --ch-black: #000000;
     --ch-gray: #D8D8D8;
-    --ch-green: #28a745;
+    --ch-green: #00c21d;
     --ch-red: #ff002f;
     --ch-red-dark: #b30021;
     --ch-red-opaque: rgba(255, 0, 47, 0.08);
@@ -40,7 +51,12 @@ body {
 
     --ch-dark-border: #c9c9c9;
 
-    --ch-text-muted: #00000099
+    --ch-text-muted: #000000bd
+}
+
+
+.text-muted {
+    color: var(--ch-text-muted);
 }
 
 
@@ -77,6 +93,12 @@ body {
 .border-black {
     border: 1px solid var(--ch-black);
 }
+
+
+.border-green {
+    border: 1px solid var(--ch-green);
+}
+
 
 
 .px-1 {
@@ -166,10 +188,6 @@ body {
 
 .left-0 {
     left: 0;
-}
-
-.gap-5 {
-    gap: 3rem;
 }
 
 
@@ -375,4 +393,9 @@ body {
 
 .gap-5 {
     gap: 1rem;
+}
+
+
+.gap-6 {
+    gap: 2rem;
 }

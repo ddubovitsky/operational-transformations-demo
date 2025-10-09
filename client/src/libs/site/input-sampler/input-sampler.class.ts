@@ -1,4 +1,4 @@
-import { Observable } from '../../../web-utils/reactivity/observable.js';
+import { Observable } from '../../web-utils/reactivity/observable.js';
 import { InsertOperation } from '@operations-transformations-core/src/operations/insert.operation.ts';
 import { DeleteOperation } from '@operations-transformations-core/src/operations/delete.operation.ts';
 
