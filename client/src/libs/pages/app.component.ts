@@ -33,7 +33,6 @@ Receiving site checks that newly received operation satisfies 2 preconditions:
 <app-site id="site1" siteId="1"></app-site>
 <app-site id="site2" siteId="2"></app-site>
 <app-site id="site3" siteId="3"></app-site>
-<app-site id="site4" siteId="4"></app-site>
 </div>
 </div>
 
@@ -51,7 +50,7 @@ export class AppComponent extends WebComponent {
 
   connectedCallback() {
     super.connectedCallback();
-    const sites = [this.getById('site1'), this.getById('site2'), this.getById('site3'), this.getById('site4')];
+    const sites = [this.getById('site1'), this.getById('site2'), this.getById('site3')];
 
     sites.forEach((it) => {
       it?.addEventListener('remoteEvent', (event) => {

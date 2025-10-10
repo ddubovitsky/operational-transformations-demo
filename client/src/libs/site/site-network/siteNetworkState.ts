@@ -11,8 +11,11 @@ export class SiteNetworkState {
 
   state = proxyViewBound({
     siteName: '',
-    connected: true,
-    notConnected: false,
+    outConnected: true,
+    outNotConnected: false,
+
+    inConnected: true,
+    inNotConnected: false,
   });
 
   storedOutgoingEvents: TimestampedOperation[] = [];
@@ -31,41 +34,62 @@ export class SiteNetworkState {
   }
 
   onReceivedEvent?: Function;
+  onSentEvent?: Function;
 
-  toggleConnectivity(b: boolean) {
-    this.state.connected = b;
-    this.state.notConnected = !b;
+  onStoredSentEvent?: Function;
+  onStoredReceivedEvent?: Function;
+
+  toggleConnectivityIn(b: boolean) {
+    this.state.inConnected = b;
+    this.state.inNotConnected = !b;
 
     this.runInRecordingEventsContext(() => {
-      if (this.state.connected) {
-        this.storedOutgoingEvents.forEach((it) => this.emitOperation$.next(it));
-        this.storedOutgoingEvents = [];
-
+      if (this.state.inConnected) {
         this.storedIncomingEvents.forEach((it) => this.executeOperation(it));
         this.storedIncomingEvents = [];
       }
     });
   }
 
+  toggleConnectivityOut(b: boolean) {
+    this.state.outConnected = b;
+    this.state.outNotConnected = !b;
+
+    this.runInRecordingEventsContext(() => {
+      if (this.state.outConnected) {
+        this.storedOutgoingEvents.forEach((it, amountLeft) => this.sendEvent(it, this.storedOutgoingEvents.length - amountLeft));
+        this.storedOutgoingEvents = [];
+      }
+    });
+  }
+
+  sendEvent(it: TimestampedOperation, amountLeft: number) {
+    this.onSentEvent?.(it, amountLeft);
+    this.emitOperation$.next(it);
+  }
+
   addLocalOperation(op: Operation) {
-    const added = this.site.addLocalOperation(op);
+    this.runInRecordingEventsContext(() => {
+      const added = this.site.addLocalOperation(op);
 
-    if (!this.state.connected) {
-      this.storedOutgoingEvents.push(added);
-      return null;
-    }
+      if (!this.state.outConnected) {
+        this.storedOutgoingEvents.push(added);
+        return null;
+      }
 
-    this.emitOperation$.next(added);
+      this.sendEvent(added, 0);
+    });
   }
 
   addRemoteOperation(operation: TimestampedOperation) {
     this.runInRecordingEventsContext(() => {
-      this.onReceivedEvent?.();
 
-      if (!this.state.connected) {
+      if (!this.state.inConnected) {
         this.storedIncomingEvents.push(operation);
         return;
       }
+
+      this.onReceivedEvent?.();
 
       this.executeOperation(operation);
     });
@@ -81,6 +105,15 @@ export class SiteNetworkState {
   runInRecordingEventsContext(func: () => void) {
     const events: OperationFrame[] = [];
 
+
+    this.onSentEvent = (operation: any) => {
+      events.push(
+        {
+          eventType: EventType.OperationSent,
+          operation: operation,
+        });
+    };
+
     this.onReceivedEvent = (operation: any) => {
       events.push(
         {
@@ -88,6 +121,7 @@ export class SiteNetworkState {
           operation: operation,
         });
     };
+
 
     this.site.onOperationExecuted = (operation, result) => {
       events.push({

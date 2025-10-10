@@ -43,16 +43,14 @@ const templateString = `
 <div class="d-flex flex-row position-relative " style="z-index: 2" bindClass class.offline="notConnected">
    <div class="gap-2 bg-gray border-black rounded-1 top-container d-flex flex-row px-3" style="padding-top: 12px">
       <p class="m-0" bind-text="siteName"></p>
-      <span class="m-0 p-0"  style="width: 48px" bind-if="connected" id="state">online</span>
-      <span class="m-0 p-0" style="width: 48px"  bind-if="notConnected">offline</span>   
-      <button style="height: 26px" id="togglestate">
-      <span class="m-0 p-0"  bind-if="connected" id="state">toggle</span>
-      <span class="m-0 p-0" bind-if="notConnected">toggle</span>   
-      </button>
    </div>
    <div class="flex-fill top-container-ghost d-flex flex-row align-items-end justify-content-between">
-      <div id="incoming" class="d-inline-block socket-block ms-2 rounded-1 mb-2">IN: 3</div>
-      <div id="incoming" class="d-inline-block socket-block rounded-1 mb-2">OUT: 3</div>
+      <div id="incoming" class="d-inline-block socket-block ms-2 rounded-1 mb-2">
+      IN
+      </div>
+      <div id="outgoing" class="d-inline-block socket-block rounded-1 mb-2">
+      OUT
+      </div>
    </div>
 </div>
 </div>
@@ -124,9 +122,6 @@ export class SiteComponent extends WebComponent {
   connectedCallback() {
     super.connectedCallback();
 
-    this.getById('togglestate')!.onclick = () => {
-      this.networkState.toggleConnectivity(!this.state.connected);
-    };
     this.networkState.initSite(+this.getAttribute('siteId')!);
 
     const sampler = new InputSampler();
@@ -167,11 +162,22 @@ export class SiteComponent extends WebComponent {
 
 
     const player = new AnimationsPlayer({
-      playReceived: (operation: Operation) => {
-        return animateScale(
-          this.getById('incoming')!,
+      playReceived: (operation: Operation, amount: number) => {
+        return delay(200).then(
+          () => {
+            return animateScale(
+              this.getById('incoming')!,
+            );
+          },
         );
       },
+      playSent: (operation: Operation, amount) => {
+
+        return animateScale(
+          this.getById('outgoing')!,
+        );
+      },
+
       playPreconditions: (operation: Operation) => {
         return animateRevealFromTop(this.getById('arrowIncomingConditions')!).then(() => {
           return animateScale(
@@ -261,7 +267,7 @@ function createBackdropContent(sampler: Sampler, inputvalue: string): string {
   return content;
 }
 
-function animateScale(element: HTMLElement, scale = 1.2, duration = 300): Promise<void> {
+function animateScale(element: HTMLElement, scale = 1.2, duration = 200): Promise<void> {
   return new Promise((resolve) => {
     const animation = element.animate(
       [
@@ -279,7 +285,7 @@ function animateScale(element: HTMLElement, scale = 1.2, duration = 300): Promis
   });
 }
 
-function animateRevealFromLeft(element: HTMLElement, duration = 200) {
+function animateRevealFromLeft(element: HTMLElement, duration = 150) {
   return new Promise((resolve) => {
     // Ensure element is visible and clipping is enabled
     element.style.opacity = 1 + '';
@@ -326,4 +332,8 @@ function animateRevealFromTop(element: HTMLElement, duration = 200) {
       resolve(true);
     };
   });
+}
+
+function delay(timeout: number) {
+  return new Promise(resolve => setTimeout(() => resolve(null), timeout));
 }

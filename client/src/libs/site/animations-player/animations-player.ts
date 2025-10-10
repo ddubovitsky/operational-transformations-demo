@@ -5,6 +5,7 @@ export enum EventType {
   OperationReceived,
   OperationStored,
   OperationRemovedFromStore,
+  OperationSent,
 }
 
 export interface OperationFrame {
@@ -18,6 +19,7 @@ export class AnimationsPlayer {
     playReceived: (operation: TimestampedOperation) => Promise<void>,
     playPreconditions: (operation: TimestampedOperation) => Promise<void>,
     playStored: (operation: TimestampedOperation) => Promise<void>,
+    playSent: (operation: TimestampedOperation) => Promise<void>,
     playUnstored: (operation: TimestampedOperation) => Promise<void>,
     playTransform: (operation: TimestampedOperation) => Promise<void>,
     playApply: (operation: TimestampedOperation, result?: string) => Promise<void>,
@@ -50,6 +52,10 @@ export class AnimationsPlayer {
 
     if (event === EventType.OperationRemovedFromStore) {
       return this.config.playUnstored(operation);
+    }
+
+    if (event === EventType.OperationSent) {
+      return this.config.playSent(operation);
     }
 
     throw 'unknown event type';
