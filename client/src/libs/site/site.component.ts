@@ -1,7 +1,7 @@
 import { registerComponent, WebComponent } from '../web-utils/web-component/web-component';
 import { DeleteSampler, InputSampler, InsertSampler, Sampler } from './input-sampler/input-sampler.class.ts';
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
-import { SiteNetworkState } from './site-network/siteNetworkState.ts';
+import { SiteOperationsRecorder } from './site-state/site-operations-recorder.ts';
 import { InputMapper } from './util/input-mapper.class.ts';
 import { AnimationsPlayer } from './animations-player/animations-player.ts';
 import { Operation } from '@operations-transformations-core/src/operations/operation.interface.ts';
@@ -108,7 +108,7 @@ const templateString = `
 export class SiteComponent extends WebComponent {
 
 
-  networkState = new SiteNetworkState();
+  networkState = new SiteOperationsRecorder();
   state = this.networkState.state;
 
   static register() {

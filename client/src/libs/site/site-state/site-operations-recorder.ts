@@ -5,7 +5,7 @@ import { TimestampedOperation } from '@operations-transformations-core/src/opera
 import { EventType, OperationFrame } from '../animations-player/animations-player.ts';
 import { proxyViewBound } from '../../web-utils/reactivity/signal-ui-bound';
 
-export class SiteNetworkState {
+export class SiteOperationsRecorder {
 
   site!: Site;
 
@@ -52,7 +52,6 @@ export class SiteNetworkState {
 
 
   private executeOperation(operation: TimestampedOperation) {
-    console.log(operation);
     this.site.addRemoteOperation(operation);
     this.siteUpdated$.next(this.site.produceResult());
   }
