@@ -11,15 +11,7 @@ export class SiteNetworkState {
 
   state = proxyViewBound({
     siteName: '',
-    outConnected: true,
-    outNotConnected: false,
-
-    inConnected: true,
-    inNotConnected: false,
   });
-
-  storedOutgoingEvents: TimestampedOperation[] = [];
-  storedIncomingEvents: TimestampedOperation[] = [];
 
   emitOperation$ = new Observable();
 
@@ -36,33 +28,6 @@ export class SiteNetworkState {
   onReceivedEvent?: Function;
   onSentEvent?: Function;
 
-  onStoredSentEvent?: Function;
-  onStoredReceivedEvent?: Function;
-
-  toggleConnectivityIn(b: boolean) {
-    this.state.inConnected = b;
-    this.state.inNotConnected = !b;
-
-    this.runInRecordingEventsContext(() => {
-      if (this.state.inConnected) {
-        this.storedIncomingEvents.forEach((it) => this.executeOperation(it));
-        this.storedIncomingEvents = [];
-      }
-    });
-  }
-
-  toggleConnectivityOut(b: boolean) {
-    this.state.outConnected = b;
-    this.state.outNotConnected = !b;
-
-    this.runInRecordingEventsContext(() => {
-      if (this.state.outConnected) {
-        this.storedOutgoingEvents.forEach((it, amountLeft) => this.sendEvent(it, this.storedOutgoingEvents.length - amountLeft));
-        this.storedOutgoingEvents = [];
-      }
-    });
-  }
-
   sendEvent(it: TimestampedOperation, amountLeft: number) {
     this.onSentEvent?.(it, amountLeft);
     this.emitOperation$.next(it);
@@ -72,22 +37,12 @@ export class SiteNetworkState {
     this.runInRecordingEventsContext(() => {
       const added = this.site.addLocalOperation(op);
 
-      if (!this.state.outConnected) {
-        this.storedOutgoingEvents.push(added);
-        return null;
-      }
-
       this.sendEvent(added, 0);
     });
   }
 
   addRemoteOperation(operation: TimestampedOperation) {
     this.runInRecordingEventsContext(() => {
-
-      if (!this.state.inConnected) {
-        this.storedIncomingEvents.push(operation);
-        return;
-      }
 
       this.onReceivedEvent?.();
 
