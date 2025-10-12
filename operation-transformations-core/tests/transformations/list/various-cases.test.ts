@@ -3,6 +3,7 @@ import { logState, resetState } from '../../../src/operations/utils/operations-u
 import { DeleteOperation } from '../../../src/operations/delete.operation.ts';
 import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 import assert from 'node:assert';
+import { Site } from '../../../src/site/site.ts';
 
 describe('various GOT manual control should correctly restore values', () => {
   // it('should correctly handle consequentual deletes', () => {
@@ -54,28 +55,30 @@ describe('various GOT manual control should correctly restore values', () => {
     //testing for this scenario:
     //S1:--2-------
     //S2:-x--3-4-
+    const site1 = new Site(1);
+    const site2 = new Site(2);
     const operations = {
-      '2': new DeleteOperation(0, 7), //remove letila
-      '3': new InsertOperation(0, 'ne '),
-      '4': new InsertOperation(7, 'porkhala '),
+      '2': site1.addLocalOperation(new DeleteOperation(0, 7)), //remove letila
+      '3': site2.addLocalOperation(new InsertOperation(0, 'ne ')),
+      '4': site2.addLocalOperation(new InsertOperation(7, 'porkhala ')),
     } as const;
 
     const transformedOperation3 = operations['3'].include(operations['2']);
-    assert.deepEqual(transformedOperation3, new InsertOperation(0, 'ne '));
+    assert.deepEqual(transformedOperation3.operation, new InsertOperation(0, 'ne '));
 
     const restoredOperation3 = transformedOperation3.exclude(operations['2']);
-    assert.deepEqual(restoredOperation3, new InsertOperation(0, 'ne '));
-
+    assert.deepEqual(restoredOperation3.operation, new InsertOperation(0, 'ne '));
+    //
     let transformedOperation4 = operations['4'];
 
     transformedOperation4 = transformedOperation4.exclude(restoredOperation3)
 
-    assert.deepEqual(transformedOperation4, new InsertOperation(4, 'porkhala '));
-
+    assert.deepEqual(transformedOperation4.operation, new InsertOperation(4, 'porkhala '));
+    //
     transformedOperation4 = transformedOperation4.include(operations['2']) // here we got undefined range
-    assert.deepEqual(transformedOperation4, new InsertOperation(0, 'porkhala '));
+    assert.deepEqual(transformedOperation4.operation, new InsertOperation(0, 'porkhala '));
     //
     transformedOperation4 = transformedOperation4.include(transformedOperation3)
-    assert.deepEqual(transformedOperation4, new InsertOperation(3, 'porkhala '));
+    assert.deepEqual(transformedOperation4.operation, new InsertOperation(3, 'porkhala '));
   });
 });

@@ -2,6 +2,7 @@ import { describe, it } from 'node:test';
 import { InsertOperation } from '../../../src/operations/insert.operation.ts';
 import assert from 'node:assert';
 import { getRa } from '../../../src/operations/utils/operations-utilities.ts';
+import { Site } from '../../../src/site/site.ts';
 
 
 describe('Exclude insert from insert', (t) => {
@@ -35,10 +36,17 @@ describe('Exclude insert from insert', (t) => {
   });
 
   it('Exclude insert where insert is inside exclusion range', () => {
+    const site1 = new Site(1);
+    const site2 = new Site(2);
     const operation = new InsertOperation(3, 'jkl');
     const target = new InsertOperation(4, '123');
-    const result = target.exclude(operation);
-    assert.deepEqual(result, new InsertOperation(1, '123'));
-    assert.deepEqual(getRa(result), operation);
+
+    const timestampedOperation = site2.addLocalOperation(operation);
+    const timestampedTarget = site1.addLocalOperation(target);
+
+    const transformed = timestampedTarget.exclude(timestampedOperation);
+
+    assert.deepEqual(transformed.operation, new InsertOperation(1, '123'));
+    assert.deepEqual(getRa(site1.siteId, transformed.vector), timestampedOperation.vector);
   });
 });

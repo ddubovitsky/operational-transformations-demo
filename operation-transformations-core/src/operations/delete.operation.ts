@@ -84,7 +84,7 @@ export class DeleteOperation implements Operation {
     const totalRange = totalDeleteEnd - position;
     const amount = totalRange - operation.getAmount();
     const result = new DeleteOperation(position, amount);
-    saveLi(siteId, this, originalVector, transformVector);
+    saveLi(siteId, this, transformVector, originalVector);
     return result;
   }
 

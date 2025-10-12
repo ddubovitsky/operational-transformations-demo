@@ -102,12 +102,12 @@ describe('Operations player', () => {
     ]);
   });
 
-  it('should skip operations until site is online', () => {
+  it('should skip operations until site is offline', () => {
     const remoteOperationsRecord = [];
     player.playOperations(
       `
-    S1:x--o-
-    S2:1-2-3
+    S1:x-------
+    S2:-1-2----3
     `,
       (siteId, operationId) => {
         return {
@@ -125,6 +125,34 @@ describe('Operations player', () => {
     );
 
     assert.deepEqual(remoteOperationsRecord, [
+    ]);
+  });
+
+  it('should replay operations once site is online', () => {
+    const remoteOperationsRecord = [];
+    player.playOperations(
+      `
+    S1:x--------o
+    S2:-1-2----3-
+    `,
+      (siteId, operationId) => {
+        return {
+          type: 'remote',
+          siteId,
+          operationId,
+        };
+      },
+      (siteId, remoteOperation) => {
+        remoteOperationsRecord.push({
+          targetSiteId: siteId,
+          ...remoteOperation,
+        });
+      },
+    );
+
+    assert.deepEqual(remoteOperationsRecord, [
+      { type: 'remote', targetSiteId: 'S1', siteId: 'S2', operationId: '1' },
+      { type: 'remote', targetSiteId: 'S1', siteId: 'S2', operationId: '2' },
       { type: 'remote', targetSiteId: 'S1', siteId: 'S2', operationId: '3' },
     ]);
   });

@@ -149,7 +149,6 @@ export class OperationsPlayer {
           sitesState.set(site, SiteState.Connected);
 
           if (this.storedOperations[site.siteId]?.length > 0) {
-            console.log('play remotes');
             this.storedOperations[site.siteId].forEach((storedOperation) => {
               playRemoteOperation(site.siteId, storedOperation);
             });

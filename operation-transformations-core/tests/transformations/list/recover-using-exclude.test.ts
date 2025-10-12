@@ -5,6 +5,7 @@ import { listExcludeOperations, listIncludeOperations } from '../../../src/opera
 import assert from 'node:assert';
 import { JointDeleteOperation } from '../../../src/operations/joint-delete.operation.ts';
 import { logState, resetState } from '../../../src/operations/utils/operations-utilities.ts';
+import { Site } from '../../../src/site/site.ts';
 
 describe('Test recoverability of joint delete include delete', () => {
   describe('simple list include 1', () => {
@@ -121,28 +122,34 @@ describe('Test recoverability of insert + delete', () => {
 
 describe('ET DI recoverability using exclude then include', () => {
   it('should recover', () => {
-    const operation = new DeleteOperation(3, 3);
+    const site1 = new Site(1);
+    const site2 = new Site(2);
 
+    const operation = new DeleteOperation(3, 3);
+    const transformedOperation = site1.addLocalOperation(operation)
     const operations = [
-      new InsertOperation(2, 'CDE'),
+      site2.addLocalOperation(new InsertOperation(2, 'CDE')),
     ];
 
-    const includedResult = listIncludeOperations(operation, operations);
+    const includedResult = listIncludeOperations(transformedOperation, operations);
 
     const excludedResult = listExcludeOperations(includedResult, operations.reverse());
-    assert.deepEqual(excludedResult, new DeleteOperation(3, 3));
+    assert.deepEqual(excludedResult.operation, new DeleteOperation(3, 3));
   });
 });
 
 
 describe('weird case', () => {
-  it('correctly work', () => {
-    const operation4 = new InsertOperation(10, 'porkhala ');
-    const operation2 = new DeleteOperation(0, 7);
+  it('correctly work 2', () => {
+    const site1 = new Site(1);
+    const site2 = new Site(2);
+
+    const operation4 =  site1.addLocalOperation(new InsertOperation(10, 'porkhala '));
+    const operation2 =  site2.addLocalOperation(new DeleteOperation(0, 7));
 
     const operation4Transformed = operation4.include(operation2);
 
-    assert.deepEqual(operation4Transformed.exclude(operation2), operation4);
+    assert.deepEqual(operation4Transformed.exclude(operation2).operation, operation4.operation);
   });
 });
 

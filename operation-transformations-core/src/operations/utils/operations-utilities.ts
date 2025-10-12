@@ -24,6 +24,7 @@ const sitesState = {
 };
 
 export function saveLi(siteId: number, originalOperation: Operation, transformOperation: StateVector, resultingOperation: StateVector) {
+  console.log('save li', siteId, transformOperation, resultingOperation);
   return sitesState.getSiteState(siteId).savedOps.set(resultingOperation, transformOperation, originalOperation);
 }
 
@@ -32,6 +33,7 @@ export function checkLi(siteId: number, transformOperation: StateVector, resulti
 }
 
 export function recoverLi(siteId: number, transformOperation: StateVector, resultingOperation: StateVector) {
+  console.log('recover li', siteId, transformOperation, resultingOperation);
   return sitesState.getSiteState(siteId).savedOps.get(resultingOperation, transformOperation);
 }
 
