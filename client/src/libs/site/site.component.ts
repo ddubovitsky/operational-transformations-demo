@@ -6,6 +6,9 @@ import { InputMapper } from './util/input-mapper.class.ts';
 import { AnimationsPlayer } from './animations-player/animations-player.ts';
 import { Operation } from '@operations-transformations-core/src/operations/operation.interface.ts';
 import { SiteNetworkInterface } from '../network/class/sites-network.class.ts';
+import { InsertOperation } from '@operations-transformations-core/src/operations/insert.operation.ts';
+import { DeleteOperation } from '@operations-transformations-core/src/operations/delete.operation.ts';
+import { JointDeleteOperation } from '@operations-transformations-core/src/operations/joint-delete.operation.ts';
 
 const templateString = `
 <style>
@@ -40,6 +43,10 @@ const templateString = `
    .offline.main-container {
    border-color: red !important;
    }
+   
+   #highlightBackdrop span {
+    font-family: monospace;
+   }
 </style>
 <div class="d-flex flex-row position-relative " style="z-index: 2" bindClass class.offline="notConnected">
    <div class="gap-2 bg-gray border-black rounded-1 top-container d-flex flex-row px-3" style="padding-top: 12px">
@@ -65,13 +72,13 @@ const templateString = `
    </div>
    <p id="result"></p>
    <div class="position-relative" style="border: 1px solid black">
-      <div style="font-size: 14px; width: 400px; height: 200px; z-index: 1; background: white; color: transparent; font-family: monospace" id="highlightBackdrop"></div>
+      <div style="padding: 4px; white-space: pre-wrap; font-size: 14px; width: 488px; height: 200px; z-index: 1; background: white; color: black; font-family: monospace" id="highlightBackdrop"></div>
       <textarea class="border: none; position-absolute top-0 left-0" style="font-size: 14px;
          font-family: monospace;
-         width: 300px;
+         width: 488px;
          height: 200px;
          outline: none;
-         padding: 0;
+         padding: 4px;
          z-index: 2;
          background: transparent;
          border: 0;
@@ -218,10 +225,15 @@ export class SiteComponent extends WebComponent implements SiteNetworkInterface 
         });
 
       },
-      playApply: (operation: Operation, result: string) => {
+      playApply: (operation: TimestampedOperation, result: string) => {
         return animateRevealFromTop(this.getById('arrowApply')!).then(() => {
-          (this.getById('mainInput')! as HTMLInputElement).value = result;
-          return Promise.resolve();
+          this.updateBackdropOperation(operation.operation);
+          return delay(500).then(() => {
+            (this.getById('mainInput')! as HTMLInputElement).value = result;
+            this.resetBackdrop();
+            return Promise.resolve();
+          })
+
         });
       },
     });
@@ -232,6 +244,19 @@ export class SiteComponent extends WebComponent implements SiteNetworkInterface 
       },
     });
 
+  }
+
+  updateBackdropOperation(operation: Operation) {
+    const backdrop = this.getById('highlightBackdrop')!;
+    backdrop.innerHTML = createBackdropContentForOperation(
+      operation!,
+      (this.getById('mainInput') as HTMLInputElement).value,
+    );
+  }
+
+  resetBackdrop() {
+    const backdrop = this.getById('highlightBackdrop')!;
+    backdrop.innerHTML = (this.getById('mainInput') as HTMLInputElement).value;
   }
 
   updateBackdrop(sampler: InputSampler) {
@@ -268,8 +293,51 @@ function createBackdropContent(sampler: Sampler, inputvalue: string): string {
     if (current) {
       content = '';
       content += inputvalue.substring(0, current.getPositionStart());
-      content += `<span currentString="${sampler.currentRemoveString}" class="delete-span" style="background: #FF4B4B; display: inline-block;width: 2px;height: 1rem;"></span>`;
+      content += `<span currentString="${sampler.currentRemoveString}" class="delete-span" style="background: #FF4B4B; display: inline-block;width: 2px;"></span>`;
       content += inputvalue.substring(current.getPositionStart(), inputvalue.length);
+    } else {
+      content = '';
+    }
+  }
+
+  return content;
+}
+
+
+function createBackdropContentForOperation(operation: Operation, inputvalue: string): string {
+  let content = '';
+  if (operation instanceof DeleteOperation) {
+    if (operation) {
+      content = '';
+      content += inputvalue.substring(0, operation.getPositionStart());
+      content += `<span style="background: #FF4B4B">${inputvalue.substring(operation.getPositionStart(), operation.getPositionStart() + operation.getAmount())}</span>`;
+      content += inputvalue.substring(operation.getPositionStart() + operation.getAmount(), inputvalue.length);
+    } else {
+      content = '';
+    }
+  }
+
+  if (operation instanceof InsertOperation) {
+    const current = operation.getInsertString();
+    if (current) {
+      content = '';
+      content += inputvalue.substring(0, operation.getPosition());
+      content += `<span currentString="${current}" class="insert-span" style="background: lawngreen; display: inline-block;width: 2px;"></span>`;
+      content += inputvalue.substring(operation.getPosition(), inputvalue.length);
+    } else {
+      content = '';
+    }
+  }
+
+  if (operation instanceof JointDeleteOperation) {
+    let current = operation.first;
+    if (current) {
+      content = '';
+      content += inputvalue.substring(0, operation.first.getPositionStart());
+      content += `<span style="background: #FF4B4B">${inputvalue.substring(operation.first.getPositionStart(), operation.first.getPositionStart() + operation.first.getAmount())}</span>`;
+      content += inputvalue.substring(operation.first.getPositionStart() + operation.first.getAmount(), operation.second.getPositionStart());
+      content += `<span style="background: #FF4B4B">${inputvalue.substring(operation.second.getPositionStart(), operation.second.getPositionStart() + operation.second.getAmount())}</span>`;
+      content += inputvalue.substring(operation.second.getPositionStart() + operation.second.getAmount(), inputvalue.length);
     } else {
       content = '';
     }

@@ -201,10 +201,22 @@ body {
     content: attr(currentString);
     transform: translateY(-1.5rem) translateX(calc(-50% + 1px));
     background: #FF4B4B;
-    padding: 4px 8px;
+    padding: 0 8px;
     color: black;
     display: inline-block;
-    height: 1rem;
+    position: relative;
+    z-index: 3;
+    clip-path: polygon(100% 0%, 0% 0%, 0% 85%, 48% 100%, 52% 100%, 100% 85%);
+}
+
+
+.insert-span::after {
+    content: attr(currentString);
+    transform: translateY(-1.5rem) translateX(calc(-50% + 1px));
+    background: lawngreen;
+    padding: 0 8px;
+    color: black;
+    display: inline-block;
     position: relative;
     z-index: 3;
     clip-path: polygon(100% 0%, 0% 0%, 0% 85%, 48% 100%, 52% 100%, 100% 85%);
