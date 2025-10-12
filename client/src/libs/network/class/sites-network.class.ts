@@ -19,6 +19,8 @@ export class SitesNetworkClass {
   sitesPending = new Map<string, TimestampedOperation[]>();
 
 
+  updatedPendingOperationsAmount?: (from: number, to: number, amount: number) => void;
+
   addSites(sites: SiteNetworkInterface[]) {
     this.sites = sites;
     for (let i = 0; i < sites.length; i++) {
@@ -53,6 +55,7 @@ export class SitesNetworkClass {
     const added = (this.sitesPending.get(key) || []);
     added.push(operation);
     this.sitesPending.set(key, added);
+    this.updatedPendingOperationsAmount?.(siteId1, siteId2, added.length);
   }
 
   public getPending(site1: SiteNetworkInterface, site2: SiteNetworkInterface): TimestampedOperation[] {
@@ -83,18 +86,20 @@ export class SitesNetworkClass {
 
     const operationsToSecond = this.getPending(S1, S3);
 
-    operationsToSecond.forEach((it) => {
+    operationsToSecond.forEach((it, index) => {
+      this.updatedPendingOperationsAmount?.(S1.siteId, S3.siteId, operationsToSecond.length - index - 1);
       S3.playOperation(it);
     });
 
     this.clearPending(S1, S3);
     const operationsToFirst = this.getPending(S3, S1);
 
-    operationsToFirst.forEach((it) => {
+    operationsToFirst.forEach((it, index) => {
+      this.updatedPendingOperationsAmount?.(S3.siteId, S1.siteId, operationsToFirst.length - index - 1);
       S1.playOperation(it);
     });
 
     this.clearPending(S3, S1);
-
   }
+
 }

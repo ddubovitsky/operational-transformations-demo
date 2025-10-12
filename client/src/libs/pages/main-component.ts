@@ -3,13 +3,21 @@ import { SiteComponent } from '../site/site.component.ts';
 import { SitesNetworkClass } from '../network/class/sites-network.class.ts';
 import { NetworkConnectionComponent } from '../network/component/network-connection.component.ts';
 
+interface ConnectionStateUpdate {
+  id: string;
+  from: number;
+  to: number;
+  amount: number;
+}
+
 const templateString = `
 <div style="max-width: 1160px; margin:  auto">
 <h1 class="text-roman text-center" style="margin-top: 3rem; margin-bottom: 1rem; font-style: italic; font-weight: bold">Generic Operational Transformations Algorithm</h1>
 <p class="text-muted">
 This is interactive demo of the operational transformations approach described in <a title="Chengzheng Sun, Xiaohua Jia, Yanchun Zhang, Yun Yang, and David Chen. 1998. Achieving convergence, causality preservation, and intention preservation in real-time cooperative editing systems. ACM Trans. Comput.-Hum. Interact. 5, 1 (March 1998), 63–108. https://doi.org/10.1145/274444.274447" href="https://dl.acm.org/doi/10.1145/274444.274447">this</a> article. 
 After reading it I did not understand a thing, and decided that implementing it myself would be the best way to learn. So I did it and here it is, enjoy :).
-</br>This demo shows steps that are taken by each operation, and displays resulting operation right before execution.
+</br>This demo shows steps that are taken by each operation, and displays resulting operation right before execution. 
+</br>Sites only send their own operations, they <b>DO NOT</b> resend operation from other sites.
 </p>
 
 <details closed class="mb-5">
@@ -33,11 +41,11 @@ Receiving site checks that newly received operation satisfies 2 preconditions:
 
 <div class="d-flex flex-row w-100 gap-sites flex-wrap position-relative pb-3">
 <app-site id="site1" siteId="1"></app-site>
-<app-network-connection id="connection1" networkNode1="site1" networkNode2="site2" style="left: 538px; top: 100px;" class="position-absolute" position="vertical"></app-network-connection>
+<app-network-connection id="connection1-2" networkNode1="site1" networkNode2="site2" style="left: 538px; top: 100px;" class="position-absolute" position="vertical"></app-network-connection>
 <app-site id="site2" siteId="2"></app-site>
-<app-network-connection id="connection2" networkNode1="site1" networkNode2="site3" style="left: 216px; top: 365px;" class="position-absolute" position="horizontal"></app-network-connection>
+<app-network-connection id="connection1-3" networkNode1="site1" networkNode2="site3" style="left: 216px; top: 365px;" class="position-absolute" position="horizontal"></app-network-connection>
 <app-site id="site3" siteId="3"></app-site>
-<app-network-connection id="connection3"  networkNode1="site2" networkNode2="site3" style="left: 546px; top: 315px;" class="position-absolute" position="diagonal"></app-network-connection>
+<app-network-connection id="connection2-3"  networkNode1="site2" networkNode2="site3" style="left: 546px; top: 315px;" class="position-absolute" position="diagonal"></app-network-connection>
 </div>
 </div>
 
@@ -53,30 +61,64 @@ export class MainComponent extends WebComponent {
     });
   }
 
+  sitesNetwork = new SitesNetworkClass();
+
   connectedCallback() {
     super.connectedCallback();
 
 
     const sites = [this.getById('site1'), this.getById('site2'), this.getById('site3')] as SiteComponent[];
-    const connections = [this.getById('connection1'), this.getById('connection2'), this.getById('connection3')] as NetworkConnectionComponent[];
+    const connections = [this.getById('connection1-2'), this.getById('connection1-3'), this.getById('connection2-3')] as NetworkConnectionComponent[];
 
-    const sitesNetwork = new SitesNetworkClass();
 
-    sitesNetwork.addSites(sites);
+    this.sitesNetwork.addSites(sites);
 
     sites.forEach((it) => {
       it?.addEventListener('remoteEvent', (event) => {
-        sitesNetwork.send((event as CustomEvent).detail);
+        this.playInRecordingContext(() => {
+          console.log('play send');
+          this.sitesNetwork.send((event as CustomEvent).detail);
+        });
       });
     });
 
     connections.forEach((connection) => {
       connection?.addEventListener('connectionStateChange', (event) => {
-        sitesNetwork.toggleConnection((event as CustomEvent).detail,
-          this.getById(connection.getAttribute('networkNode1')) as SiteComponent,
-          this.getById(connection.getAttribute('networkNode2')) as SiteComponent,
-        );
+        this.playInRecordingContext(() => {
+          this.sitesNetwork.toggleConnection((event as CustomEvent).detail,
+            this.getById(connection.getAttribute('networkNode1')) as SiteComponent,
+            this.getById(connection.getAttribute('networkNode2')) as SiteComponent,
+          );
+        });
       });
     });
+  }
+
+  playInRecordingContext(func: () => void) {
+    const events: ConnectionStateUpdate[] = [];
+    this.sitesNetwork.updatedPendingOperationsAmount = (from, to, amount) => {
+      events.push({
+        id: this.getConnectionId(from, to),
+        from: from,
+        to: to,
+        amount: amount,
+      });
+    };
+
+    func();
+
+    events.forEach((event) => {
+      const element = this.getById(event.id) as NetworkConnectionComponent;
+      if (+element.getAttribute('networkNode1')!.at(-1)! === event.from) {
+        element.updateLeft(event.amount);
+      } else {
+        element.updateRight(event.amount);
+      }
+    });
+  }
+
+
+  private getConnectionId(site1: number, site2: number) {
+    return `connection${[site1, site2].sort().join('-')}`;
   }
 }

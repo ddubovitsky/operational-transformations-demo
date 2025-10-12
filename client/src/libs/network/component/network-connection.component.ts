@@ -3,26 +3,26 @@ import { ArrowComponent } from './arrow.component.ts';
 
 const templateStringHorizontal = `
 <div  class="d-flex flex-row align-items-center gap-3">
-<span id="leftCounter" class="fs-20 fw-normal text-secondary">1</span>
+<span id="leftCounter" class="fs-20 fw-normal text-secondary">0</span>
 <div class="d-flex flex-row">
 <app-arrow id="leftArrow"></app-arrow>
 <app-arrow id="rightArrow" class="rotate-180"></app-arrow>
 </div>
 
-<span id="rightCounter" class="fs-20 fw-normal text-secondary">2</span>
+<span id="rightCounter" class="fs-20 fw-normal text-secondary">0</span>
 <app-toggle class="ms-2" id="toggle"></app-toggle>
 </div>
 `;
 
 const templateStringVertical = `
 <div  class="d-flex flex-column align-items-center gap-3">
-<span id="leftCounter" class="fs-20 fw-normal text-secondary">1</span>
+<span id="rightCounter" class="fs-20 fw-normal text-secondary">0</span>
 <div class="d-flex flex-row rotate-90">
 <app-arrow id="leftArrow"></app-arrow>
 <app-arrow id="rightArrow" class="rotate-180"></app-arrow>
 </div>
 
-<span id="rightCounter" class="fs-20 fw-normal text-secondary">2</span>
+<span id="leftCounter" class="fs-20 fw-normal text-secondary">0</span>
 <app-toggle class="ms-2" id="toggle"></app-toggle>
 </div>
 `;
@@ -30,13 +30,13 @@ const templateStringVertical = `
 
 const templateStringDiagonal = `
 <div  class="d-flex flex-column align-items-center gap-3 rotate-m-45">
-<span id="leftCounter" class="fs-20 fw-normal text-secondary rotate-45">1</span>
+<span id="leftCounter" class="fs-20 fw-normal text-secondary rotate-45">0</span>
 <div class="d-flex flex-row rotate-90">
 <app-arrow id="leftArrow"></app-arrow>
 <app-arrow id="rightArrow" class="rotate-180"></app-arrow>
 </div>
 
-<span id="rightCounter" class="fs-20 fw-normal text-secondary rotate-45">2</span>
+<span id="rightCounter" class="fs-20 fw-normal text-secondary rotate-45">0</span>
 <app-toggle class="ms-2" id="toggle"></app-toggle>
 </div>
 `;
@@ -74,5 +74,13 @@ export class NetworkConnectionComponent extends WebComponent {
       (this.getById('rightArrow') as ArrowComponent)!.toggleGreen(customEvent.detail);
       this.dispatchEvent(new CustomEvent('connectionStateChange', { detail: customEvent.detail }));
     });
+  }
+
+  updateLeft(amount: number){
+    this.getById('leftCounter').innerText = amount;
+  }
+
+  updateRight(amount: number){
+    this.getById('rightCounter').innerText = amount;
   }
 }
