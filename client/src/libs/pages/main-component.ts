@@ -1,8 +1,10 @@
 import { registerComponent, WebComponent } from '../web-utils/web-component/web-component';
 import { SiteComponent } from '../site/site.component.ts';
+import { SitesNetworkClass } from '../network/class/sites-network.class.ts';
+import { NetworkConnectionComponent } from '../network/component/network-connection.component.ts';
 
 const templateString = `
-<div style="max-width: 1070px; margin:  auto">
+<div style="max-width: 1160px; margin:  auto">
 <h1 class="text-roman text-center" style="margin-top: 3rem; margin-bottom: 1rem; font-style: italic; font-weight: bold">Generic Operational Transformations Algorithm</h1>
 <p class="text-muted">
 This is interactive demo of the operational transformations approach described in <a title="Chengzheng Sun, Xiaohua Jia, Yanchun Zhang, Yun Yang, and David Chen. 1998. Achieving convergence, causality preservation, and intention preservation in real-time cooperative editing systems. ACM Trans. Comput.-Hum. Interact. 5, 1 (March 1998), 63–108. https://doi.org/10.1145/274444.274447" href="https://dl.acm.org/doi/10.1145/274444.274447">this</a> article. 
@@ -31,11 +33,11 @@ Receiving site checks that newly received operation satisfies 2 preconditions:
 
 <div class="d-flex flex-row w-100 gap-sites flex-wrap position-relative pb-3">
 <app-site id="site1" siteId="1"></app-site>
-<app-network-connection style="left: 500px; top: 100px;" class="position-absolute" position="vertical"></app-network-connection>
+<app-network-connection id="connection1" networkNode1="site1" networkNode2="site2" style="left: 538px; top: 100px;" class="position-absolute" position="vertical"></app-network-connection>
 <app-site id="site2" siteId="2"></app-site>
-<app-network-connection style="left: 180px; top: 365px;" class="position-absolute" position="horizontal"></app-network-connection>
+<app-network-connection id="connection2" networkNode1="site1" networkNode2="site3" style="left: 216px; top: 365px;" class="position-absolute" position="horizontal"></app-network-connection>
 <app-site id="site3" siteId="3"></app-site>
-<app-network-connection style="left: 510px; top: 315px;" class="position-absolute" position="diagonal"></app-network-connection>
+<app-network-connection id="connection3"  networkNode1="site2" networkNode2="site3" style="left: 546px; top: 315px;" class="position-absolute" position="diagonal"></app-network-connection>
 </div>
 </div>
 
@@ -53,15 +55,27 @@ export class MainComponent extends WebComponent {
 
   connectedCallback() {
     super.connectedCallback();
-    const sites = [this.getById('site1'), this.getById('site2'), this.getById('site3')];
+
+
+    const sites = [this.getById('site1'), this.getById('site2'), this.getById('site3')] as SiteComponent[];
+    const connections = [this.getById('connection1'), this.getById('connection2'), this.getById('connection3')] as NetworkConnectionComponent[];
+
+    const sitesNetwork = new SitesNetworkClass();
+
+    sitesNetwork.addSites(sites);
 
     sites.forEach((it) => {
       it?.addEventListener('remoteEvent', (event) => {
-        sites.forEach((otherSite) => {
-          if (otherSite !== it) {
-            (otherSite as SiteComponent).onRemoteEvent((event as CustomEvent).detail);
-          }
-        });
+        sitesNetwork.send((event as CustomEvent).detail);
+      });
+    });
+
+    connections.forEach((connection) => {
+      connection?.addEventListener('connectionStateChange', (event) => {
+        sitesNetwork.toggleConnection((event as CustomEvent).detail,
+          this.getById(connection.getAttribute('networkNode1')) as SiteComponent,
+          this.getById(connection.getAttribute('networkNode2')) as SiteComponent,
+        );
       });
     });
   }

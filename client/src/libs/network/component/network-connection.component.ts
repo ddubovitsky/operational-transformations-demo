@@ -43,6 +43,7 @@ const templateStringDiagonal = `
 
 export class NetworkConnectionComponent extends WebComponent {
 
+
   static register() {
     registerComponent({
       tagName: 'app-network-connection',
@@ -51,27 +52,27 @@ export class NetworkConnectionComponent extends WebComponent {
     });
   }
 
-
   connectedCallback() {
     super.connectedCallback();
 
     const position = this.getAttribute('position');
-    if(position == 'horizontal'){
+    if (position == 'horizontal') {
       this.getById('content')!.innerHTML = templateStringHorizontal;
     }
 
-    if(position == 'vertical'){
+    if (position == 'vertical') {
       this.getById('content')!.innerHTML = templateStringVertical;
     }
 
-    if(position == 'diagonal'){
+    if (position == 'diagonal') {
       this.getById('content')!.innerHTML = templateStringDiagonal;
     }
 
     this.getById('toggle')!.addEventListener('toggled', (event) => {
-      event = event as CustomEvent;
-      (this.getById('leftArrow') as ArrowComponent)!.toggleGreen(event.detail);
-      (this.getById('rightArrow') as ArrowComponent)!.toggleGreen(event.detail);
+      const customEvent = event as CustomEvent;
+      (this.getById('leftArrow') as ArrowComponent)!.toggleGreen(customEvent.detail);
+      (this.getById('rightArrow') as ArrowComponent)!.toggleGreen(customEvent.detail);
+      this.dispatchEvent(new CustomEvent('connectionStateChange', { detail: customEvent.detail }));
     });
   }
 }

@@ -5,6 +5,7 @@ import { SiteOperationsRecorder } from './site-state/site-operations-recorder.ts
 import { InputMapper } from './util/input-mapper.class.ts';
 import { AnimationsPlayer } from './animations-player/animations-player.ts';
 import { Operation } from '@operations-transformations-core/src/operations/operation.interface.ts';
+import { SiteNetworkInterface } from '../network/class/sites-network.class.ts';
 
 const templateString = `
 <style>
@@ -57,7 +58,7 @@ const templateString = `
 <div class="bg-gray border-black rounded-1 p-3 main-container position-relative" bindClass class.offline="notConnected">
    <div class="d-flex flex-column gap-5">
       <div class="d-flex flex-row gap-6 mt-4 mb-3">
-         <div id="pending" class="step">pending</div>
+         <div style="min-width: 110px" id="pending" class="step text-center"><span class="" id="pendingAmount">Pending: 0</span></div>
          <div id="preconditions" class="step">preconditions</div>
          <div id="transform" class="step">transform</div>
       </div>
@@ -77,35 +78,35 @@ const templateString = `
          overflow: auto;" id="mainInput"></textarea>
    </div>
    <div id="sampledEvents" class="d-flex flex-column"></div>
-   <div class="position-absolute" style="left: 206px; top: 0;">
+   <div class="position-absolute" style="left: 244px; top: 0;">
       <div class="position-relative">
          <img class="position-absolute top-0 left-0" src="/images/arrow-down-solid-full.svg">
          <img style="opacity: 0" id="arrowIncomingConditions" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg">
       </div>
    </div>
-   <div class="position-absolute" style="left: 308px; top: 29px;">
+   <div class="position-absolute" style="left: 346px; top: 29px;">
       <div class="position-relative">
          <img class="position-absolute top-0 left-0" src="/images/arrow-right-solid-full.svg">
          <img style="opacity: 0" id="arrowConditionsTransform" class="position-absolute top-0 left-0" src="/images/arrow-right-solid-green.svg">
       </div>
    </div>
-   <div class="position-absolute" style="left: 384px;top: 58px;">
+   <div class="position-absolute" style="left: 422px;top: 58px;">
       <div class="position-relative">
          <img class="position-absolute top-0 left-0" src="/images/arrow-down-solid-full.svg">
          <img style="opacity: 0" id="arrowApply" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg">
       </div>
    </div>
    
-    <div class="position-absolute" style="left: 118px; top: 29px;">
+    <div class="position-absolute" style="left: 156px; top: 29px;">
       <div class="position-relative">
          <img class="position-absolute top-0 left-0" src="/images/arrows-left-right-solid-full.svg">
-         <img style="opacity: 0" id="arrowPendingPreconditions" class="position-absolute top-0 left-0" src="/images/arrow-down-solid-green.svg">
+         <img style="opacity: 0" id="arrowPendingPreconditions" class="position-absolute top-0 left-0" src="/images/arrows-left-right-solid-green.svg">
       </div>
    </div>
 </div>
 `;
 
-export class SiteComponent extends WebComponent {
+export class SiteComponent extends WebComponent implements SiteNetworkInterface {
 
 
   networkState = new SiteOperationsRecorder();
@@ -117,6 +118,14 @@ export class SiteComponent extends WebComponent {
       templateString: templateString,
       componentClass: SiteComponent,
     });
+  }
+
+  get siteId() {
+    return +this.getAttribute('siteId')!;
+  }
+
+  playOperation(operation: TimestampedOperation): void {
+    this.networkState.addRemoteOperation(operation);
   }
 
   connectedCallback() {
@@ -172,7 +181,6 @@ export class SiteComponent extends WebComponent {
         );
       },
       playSent: (operation: Operation, amount) => {
-
         return animateScale(
           this.getById('outgoing')!,
         );
@@ -185,12 +193,19 @@ export class SiteComponent extends WebComponent {
           );
         });
       },
-      playStored: (operation: Operation) => {
-        return animateScale(
-          this.getById('pending')!,
-        );
+      playStored: (operation: Operation, amount) => {
+        animateRevealFromRight(this.getById('arrowPendingPreconditions')).then(() => {
+          this.getById('pendingAmount').innerText = `Pending: ${amount}`;
+          return animateScale(
+            this.getById('pending')!,
+          );
+        });
       },
-      playUnstored: (operation: Operation) => {
+      playPreconditionsFromStore: (operation: Operation) => {
+        return animateRevealFromLeft(this.getById('arrowPendingPreconditions'));
+      },
+      playUnstored: (operation: Operation, amount: number) => {
+        this.getById('pendingAmount').innerText = `Pending: ${amount}`;
         return animateScale(
           this.getById('pending')!,
         );
@@ -225,10 +240,6 @@ export class SiteComponent extends WebComponent {
       sampler.eventSampler!,
       (this.getById('mainInput') as HTMLInputElement).value,
     );
-  }
-
-  onRemoteEvent(event: TimestampedOperation) {
-    this.networkState.addRemoteOperation(event);
   }
 
   emitRemoteEvent(event: TimestampedOperation) {
@@ -309,6 +320,30 @@ function animateRevealFromLeft(element: HTMLElement, duration = 150) {
   });
 }
 
+
+function animateRevealFromRight(element: HTMLElement, duration = 150) {
+  return new Promise((resolve) => {
+    // Ensure element is visible and clipping is enabled
+    element.style.opacity = 1 + '';
+
+    const animation = element.animate(
+      [
+        { clipPath: 'inset(0 0 0 100%)' }, // Fully hidden (covered from right)
+        { clipPath: 'inset(0 0 0 0%)', offset: 1 },
+      ],
+      {
+        duration: duration,
+        easing: 'ease-out',
+        fill: 'forwards',
+      },
+    );
+
+    animation.onfinish = () => {
+      element.style.opacity = 0 + '';
+      resolve(true);
+    };
+  });
+}
 
 function animateRevealFromTop(element: HTMLElement, duration = 200) {
   return new Promise((resolve) => {

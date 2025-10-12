@@ -1,7 +1,12 @@
-import { Site } from '@operations-transformations-core/src/site/site.ts';
 import { TimestampedOperation } from '@operations-transformations-core/src/operations/timestamped-operation.ts';
 
-enum Connectivity {
+export interface SiteNetworkInterface {
+  siteId: number;
+
+  playOperation(operation: TimestampedOperation): void;
+}
+
+export enum Connectivity {
   Online = 1,
   Offline = 2
 }
@@ -9,12 +14,12 @@ enum Connectivity {
 export class SitesNetworkClass {
   sitesConnectivity = new Map<string, Connectivity>();
 
-  sites!: Site[];
+  sites!: SiteNetworkInterface[];
 
   sitesPending = new Map<string, TimestampedOperation[]>();
 
 
-  addSites(sites: Site[]) {
+  addSites(sites: SiteNetworkInterface[]) {
     this.sites = sites;
     for (let i = 0; i < sites.length; i++) {
       for (let j = i + 1; j < sites.length; j++) {
@@ -34,7 +39,7 @@ export class SitesNetworkClass {
   send(operation: TimestampedOperation) {
     for (let site of this.sites) {
       if (this.sitesConnectivity.get(this.formKeyOrderless(operation.siteId, site.siteId)) === Connectivity.Online) {
-        site.addRemoteOperation(operation);
+        site.playOperation(operation);
         continue;
       }
       if (operation.siteId !== site.siteId) {
@@ -50,34 +55,43 @@ export class SitesNetworkClass {
     this.sitesPending.set(key, added);
   }
 
-  public getPending(site1: Site, site2: Site): TimestampedOperation[] {
+  public getPending(site1: SiteNetworkInterface, site2: SiteNetworkInterface): TimestampedOperation[] {
     const key = this.formKey(site1.siteId, site2.siteId);
     return this.sitesPending.get(key) || [];
   }
 
-  public clearPending(site1: Site, site2: Site) {
+  public clearPending(site1: SiteNetworkInterface, site2: SiteNetworkInterface) {
     const key = this.formKey(site1.siteId, site2.siteId);
     this.sitesPending.set(key, []);
   }
 
-  disableConnection(S1: Site, S3: Site) {
+
+  public toggleConnection(newState: boolean, S1: SiteNetworkInterface, S3: SiteNetworkInterface) {
+    if (newState) {
+      this.enableConnection(S1, S3);
+    } else {
+      this.disableConnection(S1, S3);
+    }
+  }
+
+  disableConnection(S1: SiteNetworkInterface, S3: SiteNetworkInterface) {
     this.sitesConnectivity.set(this.formKeyOrderless(S1.siteId, S3.siteId), Connectivity.Offline);
   }
 
-  enableConnection(S1: Site, S3: Site) {
+  enableConnection(S1: SiteNetworkInterface, S3: SiteNetworkInterface) {
     this.sitesConnectivity.set(this.formKeyOrderless(S1.siteId, S3.siteId), Connectivity.Online);
 
     const operationsToSecond = this.getPending(S1, S3);
 
     operationsToSecond.forEach((it) => {
-      S3.addRemoteOperation(it);
+      S3.playOperation(it);
     });
 
     this.clearPending(S1, S3);
     const operationsToFirst = this.getPending(S3, S1);
 
     operationsToFirst.forEach((it) => {
-      S1.addRemoteOperation(it);
+      S1.playOperation(it);
     });
 
     this.clearPending(S3, S1);

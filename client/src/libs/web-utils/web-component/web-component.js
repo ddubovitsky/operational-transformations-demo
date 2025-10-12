@@ -40,6 +40,7 @@ export class WebComponent extends HTMLElement {
     getById(id) {
         return this.shadowRoot.getElementById(id)
     }
+
 }
 
 const globalStyles = document.createElement('link');

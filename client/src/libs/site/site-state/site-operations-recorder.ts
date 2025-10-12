@@ -85,17 +85,19 @@ export class SiteOperationsRecorder {
       });
     };
 
-    this.site.operationsBufferedFilter.onOperationRemoved = (operation) => {
+    this.site.operationsBufferedFilter.onOperationRemoved = (operation, amount: number) => {
       events.push({
         eventType: EventType.OperationRemovedFromStore,
         operation: operation,
+        amount: amount,
       });
     };
 
-    this.site.operationsBufferedFilter.onOperationStored = (operation) => {
+    this.site.operationsBufferedFilter.onOperationStored = (operation, amount: number) => {
       events.push({
         eventType: EventType.OperationStored,
         operation: operation,
+        amount: amount,
       });
     };
 
