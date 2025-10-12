@@ -5,7 +5,18 @@ import {
   IntersectionType,
 } from './utils/operations-intersections.util.ts';
 import { DeleteOperation } from './delete.operation.ts';
-import { checkLi, getIra, getRa, isDevMode, recoverLi, reportError, saveIRa, saveLi, saveRa } from './utils/operations-utilities.ts';
+import {
+  checkLi,
+  getIra, getIra2,
+  getRa,
+  isDevMode,
+  recoverLi,
+  reportError,
+  saveIRa,
+  saveIRa2,
+  saveLi,
+  saveRa,
+} from './utils/operations-utilities.ts';
 import { Operation } from './operation.interface.ts';
 import { StateVector } from '../utils/state-vector/state-vector.class.ts';
 import { TimestampedOperation } from './timestamped-operation.ts';
@@ -130,6 +141,10 @@ export class InsertOperation implements Operation {
     }
 
     if (originalSiteId === operationSiteId) { // thats for sure
+
+      if(getIra2(originalSiteId, originalVector)){
+        return this.moveRightBy(operationStartEnd.lengthDiff);
+      }
       return this.moveRightBy(0);
     }
     if (originalSiteId > operationSiteId) {
@@ -146,6 +161,9 @@ export class InsertOperation implements Operation {
     }
 
     if (operation.position <= this.position && operationStartEnd.end <= this.position) {
+      if(this.position - operationStartEnd.lengthDiff === operation.position){
+        saveIRa2(siteId, operationSv, this);
+      }
       return this.moveRightBy(-operationStartEnd.lengthDiff);
     }
 
