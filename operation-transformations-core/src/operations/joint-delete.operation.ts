@@ -51,10 +51,24 @@ export class JointDeleteOperation implements Operation {
     );
   }
 
+  includeInsertOperation(insertOperation: InsertOperation, originalSiteId: number, originalVector: StateVector, transformVector: StateVector) {
+    const first = this.first.include(insertOperation);
+    const second = this.second.include(insertOperation);
+
+    return new JointDeleteOperation(
+      first as any, second as any,
+    );
+  }
+
   include(operation: Operation, originalSiteId: number, t: number, originalVector: StateVector, transformVector: StateVector): Operation {
     if (operation instanceof DeleteOperation) {
       return this.includeDeleteOperation(operation, originalSiteId, originalVector, transformVector);
     }
+
+    if (operation instanceof InsertOperation) {
+      return this.includeInsertOperation(operation, originalSiteId, originalVector, transformVector);
+    }
+
 
     throw 'Joint Delete include insert not included';
   }
