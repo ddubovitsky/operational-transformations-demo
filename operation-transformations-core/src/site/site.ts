@@ -6,7 +6,7 @@ import { OperationsList } from './operations-list.ts';
 import { OperationTransformStrategy } from '../got-control/operation-transform.strategy.ts';
 
 export class Site {
-  private operationsBufferedFilter = new OperationsBufferedFilter();
+  operationsBufferedFilter = new OperationsBufferedFilter();
 
   constructor(public siteId: number) {
   }
@@ -16,7 +16,7 @@ export class Site {
   stateVector = StateVector.create();
   transformStrategy = new OperationTransformStrategy();
 
-  onOperationExecuted: Function;
+  onOperationExecuted: (operation: TimestampedOperation, result: string) => void;
 
   addLocalOperation(operation1: Operation): TimestampedOperation {
     this.stateVector = this.stateVector.increment(this.siteId);
@@ -44,7 +44,7 @@ export class Site {
       addedOperation.siteId,
       addedOperation.vector.getSiteCounter(addedOperation.siteId), // next since this one is accounted already
     );
-    this.onOperationExecuted?.(addedOperation);
+    this.onOperationExecuted?.(addedOperation, this.produceResult());
     return this.stateVector;
   }
 

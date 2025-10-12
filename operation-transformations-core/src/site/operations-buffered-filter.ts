@@ -27,8 +27,8 @@ export class OperationsBufferedFilter {
 
   private pendingOperations = new PendingOperations();
 
-  public onOperationStored: Function;
-  public onOperationRemoved: Function;
+  public onOperationStored: (op: TimestampedOperation, amount: number) => void;
+  public onOperationRemoved: (op: TimestampedOperation, amount: number) => void;
 
   addAndExecutePending(
     operation: TimestampedOperation,
@@ -36,7 +36,7 @@ export class OperationsBufferedFilter {
     executeOperation: (operation: TimestampedOperation) => StateVector,
   ) {
     if (!this.strategy.canExecuteOperation(currentStateVector, operation.vector, operation.siteId)) {
-      this.onOperationStored?.(operation);
+      this.onOperationStored?.(operation, this.pendingOperations.getOperationsList().length + 1);
       this.pendingOperations.storeOperation(operation);
       return;
     }
@@ -46,7 +46,7 @@ export class OperationsBufferedFilter {
     for (const storedOperation of this.pendingOperations.getOperationsList()) {
       if (this.strategy.canExecuteOperation(newStateVector, storedOperation.vector, storedOperation.siteId)) {
         this.pendingOperations.removeOperation(storedOperation);
-        this.onOperationRemoved?.(storedOperation);
+        this.onOperationRemoved?.(storedOperation, this.pendingOperations.getOperationsList().length);
         newStateVector = executeOperation(storedOperation);
       }
     }
