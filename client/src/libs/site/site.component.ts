@@ -171,14 +171,14 @@ export class SiteComponent extends WebComponent implements SiteNetworkInterface 
     });
 
     this.networkState.siteUpdated$.subscribe(({
-      next: (it: any) => {
+      next: (_: any) => {
         // (this.getById('mainInput')! as HTMLInputElement).value = it;
       },
     }));
 
 
     const player = new AnimationsPlayer({
-      playReceived: (operation: Operation, amount: number) => {
+      playReceived: (operation: TimestampedOperation) => {
         return delay(200).then(
           () => {
             return animateScale(
@@ -187,37 +187,37 @@ export class SiteComponent extends WebComponent implements SiteNetworkInterface 
           },
         );
       },
-      playSent: (operation: Operation, amount) => {
+      playSent: (operation: TimestampedOperation) => {
         return animateScale(
           this.getById('outgoing')!,
         );
       },
 
-      playPreconditions: (operation: Operation) => {
+      playPreconditions: (operation: TimestampedOperation) => {
         return animateRevealFromTop(this.getById('arrowIncomingConditions')!).then(() => {
           return animateScale(
             this.getById('preconditions')!,
           );
         });
       },
-      playStored: (operation: Operation, amount) => {
-        animateRevealFromRight(this.getById('arrowPendingPreconditions')).then(() => {
-          this.getById('pendingAmount').innerText = `Pending: ${amount}`;
+      playStored: (operation: TimestampedOperation, amount) => {
+        return animateRevealFromRight(this.getById('arrowPendingPreconditions')!).then(() => {
+          this.getById('pendingAmount')!.innerText = `Pending: ${amount}`;
           return animateScale(
             this.getById('pending')!,
           );
         });
       },
-      playPreconditionsFromStore: (operation: Operation) => {
-        return animateRevealFromLeft(this.getById('arrowPendingPreconditions'));
+      playPreconditionsFromStore: (operation: TimestampedOperation) => {
+        return animateRevealFromLeft(this.getById('arrowPendingPreconditions')!);
       },
-      playUnstored: (operation: Operation, amount: number) => {
-        this.getById('pendingAmount').innerText = `Pending: ${amount}`;
+      playUnstored: (operation: TimestampedOperation, amount: number) => {
+        this.getById('pendingAmount')!.innerText = `Pending: ${amount}`;
         return animateScale(
           this.getById('pending')!,
         );
       },
-      playTransform: (operation: Operation) => {
+      playTransform: (operation: TimestampedOperation) => {
         return animateRevealFromLeft(this.getById('arrowConditionsTransform')!).then(() => {
           return animateScale(
             this.getById('transform')!,
@@ -225,11 +225,11 @@ export class SiteComponent extends WebComponent implements SiteNetworkInterface 
         });
 
       },
-      playApply: (operation: TimestampedOperation, result: string) => {
+      playApply: (operation: TimestampedOperation, result) => {
         return animateRevealFromTop(this.getById('arrowApply')!).then(() => {
           this.updateBackdropOperation(operation.operation);
           return delay(500).then(() => {
-            (this.getById('mainInput')! as HTMLInputElement).value = result;
+            (this.getById('mainInput')! as HTMLInputElement).value = result!;
             this.resetBackdrop();
             return Promise.resolve();
           })
@@ -364,7 +364,7 @@ function animateScale(element: HTMLElement, scale = 1.2, duration = 200): Promis
   });
 }
 
-function animateRevealFromLeft(element: HTMLElement, duration = 150) {
+function animateRevealFromLeft(element: HTMLElement, duration = 150): Promise<void> {
   return new Promise((resolve) => {
     // Ensure element is visible and clipping is enabled
     element.style.opacity = 1 + '';
@@ -383,7 +383,7 @@ function animateRevealFromLeft(element: HTMLElement, duration = 150) {
 
     animation.onfinish = () => {
       element.style.opacity = 0 + '';
-      resolve(true);
+      resolve();
     };
   });
 }

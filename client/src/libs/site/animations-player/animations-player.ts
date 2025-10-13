@@ -26,9 +26,6 @@ export class AnimationsPlayer {
     playTransform: (operation: TimestampedOperation) => Promise<void>,
     playApply: (operation: TimestampedOperation, result?: string) => Promise<void>,
   }) {
-    window.playEvents = (events) => {
-      this.playEvents(events);
-    };
   }
 
   current = Promise.resolve();
@@ -72,7 +69,7 @@ export class AnimationsPlayer {
     }
 
     if (event === EventType.OperationRemovedFromStore) {
-      return this.config.playUnstored(operation, amount);
+      return this.config.playUnstored(operation, amount!);
     }
 
     if (event === EventType.OperationSent) {

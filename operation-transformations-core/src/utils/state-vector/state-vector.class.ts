@@ -95,7 +95,7 @@ export class StateVector {
 
   isEqual(stateVector: StateVector) {
     const sitesList = this.getSites().union(stateVector.getSites());
-    const isEqual = Array.from(sitesList).every((site) => {
+    const isEqual = Array.from(sitesList).every((site: number) => {
       return stateVector.getSiteCounter(site) === this.getSiteCounter(site);
     });
 

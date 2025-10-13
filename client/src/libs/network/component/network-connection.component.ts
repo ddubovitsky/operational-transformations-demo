@@ -76,11 +76,11 @@ export class NetworkConnectionComponent extends WebComponent {
     });
   }
 
-  updateLeft(amount: number){
-    this.getById('leftCounter').innerText = amount;
+  updateLeft(amount: number) {
+    this.getById('leftCounter')!.innerText = '' + amount;
   }
 
-  updateRight(amount: number){
-    this.getById('rightCounter').innerText = amount;
+  updateRight(amount: number) {
+    this.getById('rightCounter')!.innerText = '' + amount;
   }
 }

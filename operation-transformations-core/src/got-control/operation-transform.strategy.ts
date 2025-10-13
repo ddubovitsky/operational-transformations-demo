@@ -1,14 +1,11 @@
 import { Site } from '../site/site.ts';
 import { TimestampedOperation } from '../operations/timestamped-operation.ts';
 import { OperationsList } from '../site/operations-list.ts';
-import { InsertOperation } from '../operations/insert.operation.ts';
 
-let shouldLog = false;
 
 export class OperationTransformStrategy {
   transformOperation(site: Site, operation: TimestampedOperation) {
     console.log("BEGIN TRANSFORM");
-    shouldLog = operation.operation instanceof InsertOperation && operation.operation.getInsertString() === 'ochen ';
 
     if (site.stateVector.isContextuallyEqual(operation.vector)) {
       return operation;
